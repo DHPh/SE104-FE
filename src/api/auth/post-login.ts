@@ -1,31 +1,27 @@
-import { fetchAuth } from "../api-utils";
+/* eslint-disable no-async-promise-executor */
+import fetchAPI from "../api-utils";
 
-export default async function postLogin (
-    email: string, 
-    password: string
-) {
-    let response;
-    try {
-        const res = await fetchAuth("http://localhost:34000/user/login", {
-            method: "POST",
-            body: {
-                email,
-                password,
-            },
-        });
-        const data = res.json();
+interface PostLoginResponse {
+    email: string;
+    status: string;
+}
 
-        response = {
-            status: res.status,
-            data,
-        };
-        if (response.status === 200) {
-            console.log("Login success")
-        } else {
-            throw new Error("Login failed")
+export default async function PostLogin(email: string, password: string) {
+    return new Promise<PostLoginResponse>(async (resolve, reject) => {
+        try {
+            const res = await fetchAPI("/user/login", {
+                method: "POST",
+                body: {
+                    email,
+                    password,
+                },
+            });
+            const data = await res.json();
+            if (res.status === 200) {
+                resolve(data.data);
+            }
+        } catch (error) {
+            reject(error);
         }
-    } catch (error) {
-        response = "Login failed"
-    }
-    return response;
+    });
 }
