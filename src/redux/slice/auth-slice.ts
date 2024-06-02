@@ -1,10 +1,9 @@
 /* eslint-disable no-param-reassign */
-//! TEST REDUX SLICE, MODIFY AS NEEDED
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface User {
-    name: string;
     email: string;
+    role: string;
 }
 
 export interface AuthState {

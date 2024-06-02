@@ -59,7 +59,8 @@
         "global-require": "off",
         "jsx-a11y/anchor-is-valid": "off",
         "react/jsx-closing-bracket-location": ["error", "line-aligned"],
-        "react-hooks/exhaustive-deps": "off"
+        "react-hooks/exhaustive-deps": "off",
+        "react/require-default-props": "off"
     },
     "settings": {
         "import/resolver": {

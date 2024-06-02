@@ -26,7 +26,7 @@ export default function LoginForm() {
         try {
             const response = await PostLogin(InputEmail, InputPassword);
             if (response) {
-                dispatch(loginSuccess({ email: response.email, name: "Test" }));
+                dispatch(loginSuccess({ email: response.email, role: "" }));
                 setApiCalling(false);
                 window.location.replace("/");
             } else {

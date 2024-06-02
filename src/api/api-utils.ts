@@ -16,7 +16,6 @@ export default async function fetchAPI(
             | ArrayBuffer
             | ReadableStream
             | null;
-        withToken?: boolean;
     } = {},
 ): Promise<Response> {
     const api = "http://localhost:5000";
