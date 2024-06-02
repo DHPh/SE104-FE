@@ -34,7 +34,8 @@ export default function DefaultTableRow({
                 }}
             >
                 <Checkbox
-                    checked={selected}
+                    // checked={selected}
+                    defaultChecked={selected}
                     onChange={onSelectClick}
                     inputProps={{ "aria-label": "select all desserts" }}
                 />
