@@ -9,13 +9,13 @@ import { FullPageLoading } from "@/components/global/loading/loading";
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(true);
+    const pages = ["/login"];
 
     async function checkAuth() {
         try {
             const res = await fetchAPI("/user/profile");
             if (res.status === 200) {
                 const data = await res.json();
-                const pages = ["/login"];
                 dispatch(loginSuccess({ email: data.email, role: data.role }));
                 if (pages.includes(window.location.pathname)) {
                     window.location.replace("/");
@@ -24,11 +24,19 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
                 }
             } else {
                 dispatch(logoutSuccess());
-                window.location.replace("/login");
+                if (!pages.includes(window.location.pathname)) {
+                    window.location.replace("/login");
+                } else {
+                    setLoading(false);
+                }
             }
         } catch (error) {
             dispatch(logoutSuccess());
-            window.location.replace("/login");
+            if (!pages.includes(window.location.pathname)) {
+                window.location.replace("/login");
+            } else {
+                setLoading(false);
+            }
         }
     }
 
