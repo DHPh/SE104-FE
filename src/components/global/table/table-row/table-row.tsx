@@ -1,10 +1,9 @@
 import Checkbox from "@mui/material/Checkbox";
 
-interface DefaultTableHeadProps {
+interface DefaultTableRowProps {
     columns: {
         id: string;
-        label: string;
-        align?: "right";
+        value: string;
     }[];
     selected: boolean;
     onSelectClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -14,7 +13,7 @@ export default function DefaultTableRow({
     columns,
     selected,
     onSelectClick,
-}: DefaultTableHeadProps) {
+}: DefaultTableRowProps) {
     return (
         <div
             className="h-[100px] min-w-max w-full"
@@ -35,6 +34,7 @@ export default function DefaultTableRow({
             >
                 <Checkbox
                     checked={selected}
+                    // defaultChecked={selected}
                     onChange={onSelectClick}
                     inputProps={{ "aria-label": "select all desserts" }}
                 />
@@ -53,7 +53,7 @@ export default function DefaultTableRow({
                         lineHeight: "normal",
                     }}
                 >
-                    {column.label}
+                    {column.value}
                 </div>
             ))}
         </div>

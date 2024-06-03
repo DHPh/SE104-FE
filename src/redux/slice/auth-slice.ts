@@ -24,9 +24,9 @@ const authSlice = createSlice({
             //! TEST SAVING TO SESSION STORAGE
             if (state.user?.email !== action.payload.email) {
                 sessionStorage.setItem("user", JSON.stringify(action.payload));
-                console.log("sessionStorage", sessionStorage);
+                // console.log("sessionStorage", sessionStorage);
             }
-            console.log("loginSuccess", action.payload);
+            // console.log("loginSuccess", action.payload);
             state.isAuthenticated = true;
             state.user = action.payload;
         },
