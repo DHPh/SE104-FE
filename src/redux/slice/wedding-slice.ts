@@ -20,6 +20,33 @@ export interface TableWedding {
     id: string;
 }
 
+export interface ShiftList {
+    shift_name: string;
+    note: string;
+    activate: number;
+    created_at: string; // "2024-05-26 14:30:44"
+    updated_at: string; // "2024-05-26 14:30:44"
+}
+
+export interface RoomTypeList {
+    rt_id: string;
+    rt_name: string;
+    rt_price: number;
+    created_at: string; // "2024-05-26 14:30:44"
+    updated_at: string; // "2024-05-26 14:30:44"
+}
+
+export interface RoomList {
+    room_id: string;
+    room_name: string;
+    room_type: string;
+    max_table: number;
+    min_table: number;
+    note: string;
+    created_at: string; // "2024-05-26 14:30:44"
+    updated_at: string; // "2024-05-26 14:30:44"
+}
+
 export interface WeddingState {
     weddingList: {
         tableData: TableWedding[];
@@ -30,6 +57,9 @@ export interface WeddingState {
         count: number;
         data: Wedding[];
     };
+    shiftList: ShiftList[];
+    roomTypeList: RoomTypeList[];
+    roomList: RoomList[];
 }
 
 const initialState: WeddingState = {
@@ -42,6 +72,9 @@ const initialState: WeddingState = {
         count: 0,
         data: [],
     },
+    shiftList: [],
+    roomTypeList: [],
+    roomList: [],
 };
 
 const weddingSlice = createSlice({
@@ -51,6 +84,11 @@ const weddingSlice = createSlice({
         setWeddingList: (state, action: PayloadAction<Wedding[]>) => {
             state.weddingList.fullData = action.payload;
             state.weddingList.tableData = action.payload.map((wedding) => {
+                const roomName = state.roomList.find((r) => r.room_id === wedding.room_id)
+                    ?.room_name;
+                const shiftName = state.shiftList.find((s) => s.shift_name === wedding.shift_name)
+                    ?.note;
+
                 return {
                     data: [
                         {
@@ -63,15 +101,15 @@ const weddingSlice = createSlice({
                         },
                         {
                             id: "room",
-                            value: wedding.room_id,
+                            value: roomName || wedding.room_id,
                         },
                         {
                             id: "shift",
-                            value: wedding.shift_name,
+                            value: shiftName || wedding.shift_name,
                         },
                         {
-                            id: "created-date",
-                            value: wedding.created_at,
+                            id: "wedding-date",
+                            value: wedding.wedding_date,
                         },
                     ],
                     selected: wedding.selected,
@@ -124,8 +162,24 @@ const weddingSlice = createSlice({
                 state.selectedWedding.count = 0;
             }
         },
+        setShiftList: (state, action: PayloadAction<ShiftList[]>) => {
+            state.shiftList = action.payload;
+        },
+        setRoomTypeList: (state, action: PayloadAction<RoomTypeList[]>) => {
+            state.roomTypeList = action.payload;
+        },
+        setRoomList: (state, action: PayloadAction<RoomList[]>) => {
+            state.roomList = action.payload;
+        },
     },
 });
 
-export const { setWeddingList, toggleWedding, selectAllWedding } = weddingSlice.actions;
+export const {
+    setWeddingList,
+    toggleWedding,
+    selectAllWedding,
+    setShiftList,
+    setRoomTypeList,
+    setRoomList,
+} = weddingSlice.actions;
 export default weddingSlice.reducer;

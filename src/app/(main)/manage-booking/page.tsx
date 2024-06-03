@@ -17,10 +17,13 @@ export default function Page() {
     const selectedWeddingCount = useSelector(
         (state: RootState) => state.wedding.selectedWedding.count,
     );
-
-    console.log("tableWeddingList", tableWeddingList);
+    const shiftList = useSelector((state: RootState) => state.wedding.shiftList);
+    const roomList = useSelector((state: RootState) => state.wedding.roomList);
 
     useEffect(() => {
+        if (shiftList.length === 0 || roomList.length === 0) {
+            return;
+        }
         GetWeddingList({
             dispatch,
             page: 1,
@@ -28,7 +31,7 @@ export default function Page() {
             startdate: "30/05/2024",
             enddate: "16/06/2024",
         });
-    }, []);
+    }, [roomList, shiftList]);
 
     const tableHeadColumns = [
         {
@@ -48,8 +51,8 @@ export default function Page() {
             label: "Ca",
         },
         {
-            id: "created-date",
-            label: "Ngày tạo",
+            id: "wedding-date",
+            label: "Ngày cưới",
         },
     ];
 
