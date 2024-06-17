@@ -19,7 +19,7 @@ export default function DefaultTableHead({
 }: DefaultTableHeadProps) {
     return (
         <div
-            className="h-[100px] min-w-max w-full"
+            className="h-[100px] min-w-max w-full pr-6"
             style={{
                 borderTop: "1px solid var(--foreground-low, #98A2B3)",
                 borderBottom: "1px solid var(--foreground-low, #98A2B3)",

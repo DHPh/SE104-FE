@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { convertDateToClientFormat } from "@/functions/convert-data";
 
 export interface Wedding {
     wedding_id: string;
@@ -47,6 +48,87 @@ export interface RoomList {
     updated_at: string; // "2024-05-26 14:30:44"
 }
 
+export interface WeddingDetail {
+    wedding_info: {
+        created_by: string;
+        confirm_by: string;
+        groom_name: string;
+        bride_name: string;
+        phone_number: string;
+        room_id: string;
+        shift_name: string;
+        note: string;
+        num_table: number;
+        wedding_date: string;
+        delete_status: number;
+        created_at: string;
+        updated_at: string;
+        room_name: string;
+        room_type: string;
+        room_type_name: string;
+        room_type_price: number;
+    };
+    food_orders: {
+        fo_id: string;
+        fo_note: string;
+        fo_price: number;
+    }[];
+    service_orders: {
+        service_id: string;
+        note: string;
+        num: number;
+        service_price: number;
+    }[];
+    invoice: {
+        total: number;
+        payment_status: number;
+        invoice_date: string;
+        invoice_tax: number;
+    };
+}
+
+export interface ServiceList {
+    service_id: string;
+    service_name: string;
+    service_price: number;
+    note: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface FoodList {
+    food_id: string;
+    food_name: string;
+    food_price: number;
+    note: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface UpdatedWedding {
+    wedding_id: string;
+    groom_name: string;
+    bride_name: string;
+    wedding_date: string;
+    phone_number: string;
+    room_id: string;
+    shift_name: string;
+    num_table: number;
+    payment_status: number;
+    note: string;
+    food_orders: {
+        fo_id: string;
+        fo_note: string;
+        fo_price: number;
+    }[];
+    service_orders: {
+        service_id: string;
+        note: string;
+        num: number;
+        service_price: number;
+    }[];
+}
+
 export interface WeddingState {
     weddingList: {
         tableData: TableWedding[];
@@ -60,6 +142,9 @@ export interface WeddingState {
     shiftList: ShiftList[];
     roomTypeList: RoomTypeList[];
     roomList: RoomList[];
+    serviceList: ServiceList[];
+    foodList: FoodList[];
+    weddingDetail?: WeddingDetail | undefined;
 }
 
 const initialState: WeddingState = {
@@ -75,6 +160,9 @@ const initialState: WeddingState = {
     shiftList: [],
     roomTypeList: [],
     roomList: [],
+    serviceList: [],
+    foodList: [],
+    weddingDetail: undefined,
 };
 
 const weddingSlice = createSlice({
@@ -171,6 +259,56 @@ const weddingSlice = createSlice({
         setRoomList: (state, action: PayloadAction<RoomList[]>) => {
             state.roomList = action.payload;
         },
+        setWeddingDetail: (state, action: PayloadAction<WeddingDetail>) => {
+            state.weddingDetail = action.payload;
+        },
+        setServiceList: (state, action: PayloadAction<ServiceList[]>) => {
+            state.serviceList = action.payload;
+        },
+        setFoodList: (state, action: PayloadAction<FoodList[]>) => {
+            state.foodList = action.payload;
+        },
+        setUpdateWedding: (state, action: PayloadAction<UpdatedWedding>) => {
+            console.log(action.payload);
+            const wedding = state.weddingList.fullData.find(
+                (w) => w.wedding_id === action.payload.wedding_id,
+            );
+            if (wedding) {
+                wedding.groom_name = action.payload.groom_name;
+                wedding.bride_name = action.payload.bride_name;
+                wedding.wedding_date = convertDateToClientFormat(action.payload.wedding_date);
+                wedding.room_id = action.payload.room_id;
+                wedding.shift_name = action.payload.shift_name;
+                wedding.num_table = action.payload.num_table;
+            }
+            const tableWedding = state.weddingList.tableData.find(
+                (w) => w.id === action.payload.wedding_id,
+            );
+            if (tableWedding) {
+                tableWedding.data = [
+                    {
+                        id: "groom-name",
+                        value: action.payload.groom_name,
+                    },
+                    {
+                        id: "bride-name",
+                        value: action.payload.bride_name,
+                    },
+                    {
+                        id: "room",
+                        value: action.payload.room_id,
+                    },
+                    {
+                        id: "shift",
+                        value: action.payload.shift_name,
+                    },
+                    {
+                        id: "wedding-date",
+                        value: convertDateToClientFormat(action.payload.wedding_date),
+                    },
+                ];
+            }
+        },
     },
 });
 
@@ -181,5 +319,9 @@ export const {
     setShiftList,
     setRoomTypeList,
     setRoomList,
+    setWeddingDetail,
+    setServiceList,
+    setFoodList,
+    setUpdateWedding,
 } = weddingSlice.actions;
 export default weddingSlice.reducer;

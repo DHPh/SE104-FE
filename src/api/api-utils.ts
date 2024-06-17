@@ -6,8 +6,18 @@ export default async function fetchAPI(
         method = "GET",
         body = null,
     }: {
-        method?: "GET" | "POST" | "DELETE";
+        method?:
+            | "GET"
+            | "POST"
+            | "DELETE"
+            | "PUT"
+            | "PATCH"
+            | "OPTIONS"
+            | "HEAD"
+            | "CONNECT"
+            | "TRACE";
         body?:
+            | object
             | { [key: string]: string | number }
             | string
             | URLSearchParams
@@ -24,7 +34,17 @@ export default async function fetchAPI(
     let contentType;
 
     //* Handle method
-    const validMethods = ["GET", "POST", "DELETE"];
+    const validMethods = [
+        "GET",
+        "POST",
+        "DELETE",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "HEAD",
+        "CONNECT",
+        "TRACE",
+    ];
     if (!validMethods.includes(method)) {
         return new Promise((resolve, reject) => {
             reject(new Error(`Method must be one of ${validMethods.join(", ")}`));
