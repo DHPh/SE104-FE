@@ -9,7 +9,7 @@ interface DefaultTableRowProps {
     }[];
     selected: boolean;
     onSelectClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onItemClicked: () => void;
+    onItemClicked: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
 export default function DefaultTableRow({
@@ -22,13 +22,27 @@ export default function DefaultTableRow({
         <div
             className="h-[100px] min-w-max w-full hover:bg-slate-100 cursor-pointer pr-6"
             style={{
+                position: "relative",
                 borderBottom: "1px solid var(--foreground-low, #98A2B3)",
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "space-between",
             }}
-            onClick={onItemClicked}
         >
+            <div
+                style={{
+                    position: "absolute",
+                    width: "100%",
+                    height: "100%",
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onItemClicked(e);
+                }}
+            />
             <div
                 style={{
                     height: "100%",
@@ -40,7 +54,10 @@ export default function DefaultTableRow({
                 <Checkbox
                     checked={selected}
                     // defaultChecked={selected}
-                    onChange={onSelectClick}
+                    onChange={(e) => {
+                        e.stopPropagation();
+                        onSelectClick(e);
+                    }}
                     inputProps={{ "aria-label": "select all desserts" }}
                 />
             </div>

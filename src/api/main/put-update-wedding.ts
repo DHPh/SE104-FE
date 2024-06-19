@@ -4,7 +4,7 @@
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import fetchAPI from "../api-utils";
 import { setUpdateWedding, UpdatedWedding } from "@/redux/slice/wedding-slice";
-import { convertDateToServerFormat } from "@/functions/convert-data";
+import { formatDateFromISOString } from "@/functions/convert-data";
 
 export default async function PutUpdateWedding({
     dispatch,
@@ -16,18 +16,19 @@ export default async function PutUpdateWedding({
     wedding_info: UpdatedWedding;
 }) {
     return new Promise(async (resolve, reject) => {
-        const tempInfo = wedding_info;
         wedding_info.wedding_id = wedding_id;
-        wedding_info.wedding_date = convertDateToServerFormat(wedding_info.wedding_date);
+
+        const tempInfo = { ...wedding_info };
+        tempInfo.wedding_date = formatDateFromISOString(wedding_info.wedding_date);
         try {
             const res = await fetchAPI(`/wedding/${wedding_id}/update`, {
                 method: "PUT",
-                body: wedding_info,
+                body: tempInfo,
             });
             const data = await res.json();
             if (res.status === 200) {
                 resolve(data.data);
-                dispatch(setUpdateWedding(tempInfo));
+                dispatch(setUpdateWedding(wedding_info));
             } else {
                 reject(data.message_vi);
             }

@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { convertDateToClientFormat } from "@/functions/convert-data";
+import { convertDateToServerFormat } from "@/functions/convert-data";
 
 export interface Wedding {
     wedding_id: string;
@@ -197,7 +197,7 @@ const weddingSlice = createSlice({
                         },
                         {
                             id: "wedding-date",
-                            value: wedding.wedding_date,
+                            value: convertDateToServerFormat(wedding.wedding_date),
                         },
                     ],
                     selected: wedding.selected,
@@ -269,14 +269,13 @@ const weddingSlice = createSlice({
             state.foodList = action.payload;
         },
         setUpdateWedding: (state, action: PayloadAction<UpdatedWedding>) => {
-            console.log(action.payload);
             const wedding = state.weddingList.fullData.find(
                 (w) => w.wedding_id === action.payload.wedding_id,
             );
             if (wedding) {
                 wedding.groom_name = action.payload.groom_name;
                 wedding.bride_name = action.payload.bride_name;
-                wedding.wedding_date = convertDateToClientFormat(action.payload.wedding_date);
+                wedding.wedding_date = action.payload.wedding_date;
                 wedding.room_id = action.payload.room_id;
                 wedding.shift_name = action.payload.shift_name;
                 wedding.num_table = action.payload.num_table;
@@ -284,6 +283,11 @@ const weddingSlice = createSlice({
             const tableWedding = state.weddingList.tableData.find(
                 (w) => w.id === action.payload.wedding_id,
             );
+            const roomName = state.roomList.find((r) => r.room_id === action.payload.room_id)
+                ?.room_name;
+            const shiftName = state.shiftList.find(
+                (s) => s.shift_name === action.payload.shift_name,
+            )?.note;
             if (tableWedding) {
                 tableWedding.data = [
                     {
@@ -296,15 +300,15 @@ const weddingSlice = createSlice({
                     },
                     {
                         id: "room",
-                        value: action.payload.room_id,
+                        value: roomName || action.payload.room_id,
                     },
                     {
                         id: "shift",
-                        value: action.payload.shift_name,
+                        value: shiftName || action.payload.shift_name,
                     },
                     {
                         id: "wedding-date",
-                        value: convertDateToClientFormat(action.payload.wedding_date),
+                        value: convertDateToServerFormat(action.payload.wedding_date),
                     },
                 ];
             }

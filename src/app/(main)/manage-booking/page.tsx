@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-nested-ternary */
 
 "use client";
@@ -26,6 +27,7 @@ import {
     toggleWedding,
     selectAllWedding,
     UpdatedWedding,
+    setWeddingDetail,
 } from "@/redux/slice/wedding-slice";
 import {
     getFoodName,
@@ -64,6 +66,17 @@ export default function Page() {
     const foodList = useSelector((state: RootState) => state.wedding.foodList);
     const serviceList = useSelector((state: RootState) => state.wedding.serviceList);
 
+    const [tableRange, setTableRange] = useState<{
+        min_table: number;
+        max_table: number;
+    }>({
+        min_table: 0,
+        max_table: 100,
+    });
+
+    const [currentNewFood, setCurrentNewFood] = useState<string | undefined>(undefined);
+    const [currentNewService, setCurrentNewService] = useState<string | undefined>(undefined);
+
     useEffect(() => {
         if (shiftList.length === 0 || roomList.length === 0) {
             return;
@@ -73,7 +86,7 @@ export default function Page() {
             page: 1,
             limit: 10,
             startdate: "30/05/2024",
-            enddate: "16/06/2024",
+            enddate: "30/12/2024",
         });
     }, [roomList, shiftList]);
 
@@ -84,7 +97,27 @@ export default function Page() {
         setUpdatedWedding(
             convertWeddingDetail(currentWedding?.fullData.wedding_id || "", weddingDetail),
         );
+        const room = roomList.find((r) => r.room_id === weddingDetail.wedding_info.room_id);
+        const min_table = room?.min_table || 0;
+        const max_table = room?.max_table || 100;
+        setTableRange({
+            min_table,
+            max_table,
+        });
     }, [weddingDetail]);
+
+    useEffect(() => {
+        if (!updatedWedding) {
+            return;
+        }
+        const room = roomList.find((r) => r.room_id === updatedWedding.room_id);
+        const min_table = room?.min_table || 0;
+        const max_table = room?.max_table || 100;
+        setTableRange({
+            min_table,
+            max_table,
+        });
+    }, [updatedWedding, roomList]);
 
     const tableHeadColumns = [
         {
@@ -180,10 +213,139 @@ export default function Page() {
         });
     };
 
+    const handleUpdateFoodOrder = (
+        type: "delete" | "add",
+        {
+            foodId,
+            note,
+            price,
+        }: {
+            foodId: string;
+            note: string;
+            price: number;
+        },
+    ) => {
+        if (type === "add" && weddingDetail?.food_orders.find((f) => f.fo_id === foodId)) {
+            return;
+        }
+        setUpdatedWedding((prevState) => {
+            if (prevState) {
+                if (type === "delete") {
+                    return {
+                        ...prevState,
+                        food_orders: prevState.food_orders.filter(
+                            (foodOrder) => foodOrder.fo_id !== foodId,
+                        ),
+                    };
+                }
+                return {
+                    ...prevState,
+                    food_orders: [
+                        ...prevState.food_orders,
+                        {
+                            fo_id: foodId,
+                            fo_note: note,
+                            fo_price: price,
+                        },
+                    ],
+                };
+            }
+            return prevState;
+        });
+
+        if (weddingDetail) {
+            dispatch(
+                setWeddingDetail({
+                    ...weddingDetail,
+                    food_orders:
+                        type === "delete"
+                            ? weddingDetail.food_orders.filter(
+                                  (foodOrder) => foodOrder.fo_id !== foodId,
+                              )
+                            : [
+                                  ...weddingDetail.food_orders,
+                                  {
+                                      fo_id: foodId,
+                                      fo_note: note,
+                                      fo_price: price,
+                                  },
+                              ],
+                }),
+            );
+        }
+    };
+
+    const handleUpdateServiceOrder = (
+        type: "delete" | "add",
+        {
+            serviceId,
+            note,
+            num,
+            price,
+        }: {
+            serviceId: string;
+            note: string;
+            num: number;
+            price: number;
+        },
+    ) => {
+        if (
+            type === "add" &&
+            weddingDetail?.service_orders.find((s) => s.service_id === serviceId)
+        ) {
+            return;
+        }
+        setUpdatedWedding((prevState) => {
+            if (prevState) {
+                if (type === "delete") {
+                    return {
+                        ...prevState,
+                        service_orders: prevState.service_orders.filter(
+                            (serviceOrder) => serviceOrder.service_id !== serviceId,
+                        ),
+                    };
+                }
+                return {
+                    ...prevState,
+                    service_orders: [
+                        ...prevState.service_orders,
+                        {
+                            service_id: serviceId,
+                            note,
+                            num,
+                            service_price: price,
+                        },
+                    ],
+                };
+            }
+            return prevState;
+        });
+
+        if (weddingDetail) {
+            dispatch(
+                setWeddingDetail({
+                    ...weddingDetail,
+                    service_orders:
+                        type === "delete"
+                            ? weddingDetail.service_orders.filter(
+                                  (serviceOrder) => serviceOrder.service_id !== serviceId,
+                              )
+                            : [
+                                  ...weddingDetail.service_orders,
+                                  {
+                                      service_id: serviceId,
+                                      note,
+                                      num,
+                                      service_price: price,
+                                  },
+                              ],
+                }),
+            );
+        }
+    };
+
     async function handleUpdateWedding() {
-        console.log(updatedWedding && currentWedding);
         if (updatedWedding && currentWedding) {
-            console.log("cc");
             try {
                 setUpdateStatus("loading");
                 const res = await PutUpdateWedding({
@@ -397,17 +559,39 @@ export default function Page() {
                                                 ))}
                                             </Select>
                                         </FormControl>
-                                        <TextField
-                                            label="Số bàn"
-                                            id="num_table"
-                                            defaultValue={currentWedding.fullData.num_table}
-                                            onChange={(e) => {
-                                                handleWeddingInfoChange(
-                                                    "num_table",
-                                                    e.target.value,
-                                                );
-                                            }}
-                                        />
+                                        <FormControl fullWidth>
+                                            <InputLabel id="num_table-label">Số bàn</InputLabel>
+                                            <Select
+                                                labelId="num_table-label"
+                                                id="num_table"
+                                                label="Số bàn"
+                                                defaultValue={currentWedding.fullData.num_table}
+                                                onChange={(e) => {
+                                                    handleWeddingInfoChange(
+                                                        "num_table",
+                                                        e.target.value,
+                                                    );
+                                                }}
+                                            >
+                                                {tableRange.min_table && tableRange.max_table ? (
+                                                    Array.from(
+                                                        {
+                                                            length:
+                                                                tableRange.max_table -
+                                                                tableRange.min_table +
+                                                                1,
+                                                        },
+                                                        (_, i) => i + tableRange.min_table,
+                                                    ).map((num) => (
+                                                        <MenuItem key={num} value={num}>
+                                                            {num}
+                                                        </MenuItem>
+                                                    ))
+                                                ) : (
+                                                    <MenuItem value={0}>0</MenuItem>
+                                                )}
+                                            </Select>
+                                        </FormControl>
                                         <TextField
                                             label="Ghi chú"
                                             id="note"
@@ -532,14 +716,32 @@ export default function Page() {
                                     <Divider />
                                     <br />
                                     <span className="font-bold">THÔNG TIN MÓN ĂN</span>
+                                    <br />
+                                    <span className="font-bold">
+                                        Số lượng: {weddingDetail.food_orders.length}
+                                    </span>
                                     <div>
-                                        {weddingDetail.food_orders.map((foodOrder) => (
+                                        {weddingDetail.food_orders.map((foodOrder, index) => (
                                             <React.Fragment key={foodOrder.fo_id}>
                                                 <br />
                                                 <div className="flex flex-col">
-                                                    <span className="font-bold">
-                                                        Món ăn:{" "}
+                                                    <span className="font-bold flex flex-row justify-between">
+                                                        {index + 1} - Món ăn:{" "}
                                                         {getFoodName(foodList, foodOrder.fo_id)}
+                                                        <Button
+                                                            variant="contained"
+                                                            color="warning"
+                                                            className="flex-shrink-0"
+                                                            onClick={() => {
+                                                                handleUpdateFoodOrder("delete", {
+                                                                    foodId: foodOrder.fo_id,
+                                                                    note: foodOrder.fo_note,
+                                                                    price: foodOrder.fo_price,
+                                                                });
+                                                            }}
+                                                        >
+                                                            Xoá
+                                                        </Button>
                                                     </span>
                                                     <TextField
                                                         label="Ghi chú"
@@ -593,7 +795,9 @@ export default function Page() {
                                                     labelId="food_id-label"
                                                     id="add-food_id"
                                                     label="Món ăn"
-                                                    onChange={() => {}}
+                                                    onChange={(e) => {
+                                                        setCurrentNewFood(String(e.target.value));
+                                                    }}
                                                 >
                                                     {foodList.map((food, index) => (
                                                         <MenuItem
@@ -610,6 +814,19 @@ export default function Page() {
                                                 variant="contained"
                                                 color="primary"
                                                 className="flex-shrink-0"
+                                                onClick={() => {
+                                                    if (!currentNewFood) {
+                                                        return;
+                                                    }
+                                                    handleUpdateFoodOrder("add", {
+                                                        foodId: currentNewFood,
+                                                        note: "",
+                                                        price:
+                                                            foodList.find(
+                                                                (f) => f.food_id === currentNewFood,
+                                                            )?.food_price || 0,
+                                                    });
+                                                }}
                                             >
                                                 THÊM MÓN ĂN
                                             </Button>
@@ -619,17 +836,37 @@ export default function Page() {
                                     <Divider />
                                     <br />
                                     <span className="font-bold">THÔNG TIN DỊCH VỤ</span>
+                                    <br />
+                                    <span className="font-bold">
+                                        Số lượng: {weddingDetail.service_orders.length}
+                                    </span>
                                     <div>
-                                        {weddingDetail.service_orders.map((serviceOrder) => (
+                                        {weddingDetail.service_orders.map((serviceOrder, index) => (
                                             <React.Fragment key={serviceOrder.service_id}>
                                                 <br />
                                                 <div className="flex flex-col">
-                                                    <span className="font-bold">
-                                                        Dịch vụ:{" "}
+                                                    <span className="font-bold flex flex-row justify-between">
+                                                        {index + 1} - Dịch vụ:{" "}
                                                         {getServiceName(
                                                             serviceList,
                                                             serviceOrder.service_id,
                                                         )}
+                                                        <Button
+                                                            variant="contained"
+                                                            color="warning"
+                                                            className="flex-shrink-0"
+                                                            onClick={() => {
+                                                                handleUpdateServiceOrder("delete", {
+                                                                    serviceId:
+                                                                        serviceOrder.service_id,
+                                                                    note: serviceOrder.note,
+                                                                    num: serviceOrder.num,
+                                                                    price: serviceOrder.service_price,
+                                                                });
+                                                            }}
+                                                        >
+                                                            Xoá
+                                                        </Button>
                                                     </span>
                                                     <TextField
                                                         label="Số lượng"
@@ -696,7 +933,11 @@ export default function Page() {
                                                     labelId="service_id-label"
                                                     id="add-service_id"
                                                     label="Dịch vụ"
-                                                    onChange={() => {}}
+                                                    onChange={(e) => {
+                                                        setCurrentNewService(
+                                                            String(e.target.value),
+                                                        );
+                                                    }}
                                                 >
                                                     {serviceList.map((service, index) => (
                                                         <MenuItem
@@ -713,6 +954,22 @@ export default function Page() {
                                                 variant="contained"
                                                 color="primary"
                                                 className="flex-shrink-0"
+                                                onClick={() => {
+                                                    if (!currentNewService) {
+                                                        return;
+                                                    }
+                                                    handleUpdateServiceOrder("add", {
+                                                        serviceId: currentNewService,
+                                                        note: "",
+                                                        num: 1,
+                                                        price:
+                                                            serviceList.find(
+                                                                (s) =>
+                                                                    s.service_id ===
+                                                                    currentNewService,
+                                                            )?.service_price || 0,
+                                                    });
+                                                }}
                                             >
                                                 THÊM DỊCH VỤ
                                             </Button>
@@ -727,6 +984,8 @@ export default function Page() {
                                 color="inherit"
                                 onClick={() => {
                                     setCurrentWedding(undefined);
+                                    setCurrentNewFood(undefined);
+                                    setUpdatedWedding(undefined);
                                 }}
                             >
                                 THOÁT

@@ -42,6 +42,16 @@ export function handleVNDInput(inputValue: string) {
     return extractedPrice;
 }
 
+export const formatDateFromISOString = (date: string) => {
+    const dateObj = new Date(date);
+    const day = dateObj.getDate();
+    const month = dateObj.getMonth() + 1;
+    const year = dateObj.getFullYear();
+    return `${day < 10 ? `0${day}` : day}/${month < 10 ? `0${month}` : month}/${year} ${
+        dateObj.getHours() < 10 ? `0${dateObj.getHours()}` : dateObj.getHours()
+    }:${dateObj.getMinutes() < 10 ? `0${dateObj.getMinutes()}` : dateObj.getMinutes()}`;
+};
+
 export const convertDateToServerFormat = (date: string) => {
     // Convert from 2024-06-02 15:12:30 to 02/06/2024 15:12
     const dateObj = new Date(date);
