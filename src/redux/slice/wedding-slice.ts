@@ -129,6 +129,29 @@ export interface UpdatedWedding {
     }[];
 }
 
+export interface NewWedding {
+    groom_name: string;
+    bride_name: string;
+    wedding_date: string;
+    phone_number: string;
+    room_id: string;
+    shift_name: string;
+    num_table: number;
+    note: string;
+    payment_status: number;
+    food_orders: {
+        fo_id: string;
+        fo_note: string;
+        fo_price: number;
+    }[];
+    service_orders: {
+        service_id: string;
+        note: string;
+        num: number;
+        service_price: number;
+    }[];
+}
+
 export interface WeddingState {
     weddingList: {
         tableData: TableWedding[];
@@ -313,6 +336,52 @@ const weddingSlice = createSlice({
                 ];
             }
         },
+        setNewWedding: (state, action: PayloadAction<UpdatedWedding>) => {
+            // Push to top of the list
+            state.weddingList.fullData.unshift({
+                wedding_id: action.payload.wedding_id,
+                groom_name: action.payload.groom_name,
+                bride_name: action.payload.bride_name,
+                wedding_date: action.payload.wedding_date,
+                room_id: action.payload.room_id,
+                shift_name: action.payload.shift_name,
+                num_table: action.payload.num_table,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            });
+            const roomName = state.roomList.find((r) => r.room_id === action.payload.room_id)
+                ?.room_name;
+            const shiftName = state.shiftList.find(
+                (s) => s.shift_name === action.payload.shift_name,
+            )?.note;
+            state.weddingList.tableData.unshift({
+                data: [
+                    {
+                        id: "groom-name",
+                        value: action.payload.groom_name,
+                    },
+                    {
+                        id: "bride-name",
+                        value: action.payload.bride_name,
+                    },
+                    {
+                        id: "room",
+                        value: roomName || action.payload.room_id,
+                    },
+                    {
+                        id: "shift",
+                        value: shiftName || action.payload.shift_name,
+                    },
+                    {
+                        id: "wedding-date",
+                        value: convertDateToServerFormat(action.payload.wedding_date),
+                    },
+                ],
+                selected: false,
+                id: action.payload.wedding_id,
+            });
+            state.weddingList.count += 1;
+        },
     },
 });
 
@@ -327,5 +396,6 @@ export const {
     setServiceList,
     setFoodList,
     setUpdateWedding,
+    setNewWedding,
 } = weddingSlice.actions;
 export default weddingSlice.reducer;

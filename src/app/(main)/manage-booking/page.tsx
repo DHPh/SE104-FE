@@ -20,14 +20,15 @@ import DefaultTableRow from "@/components/global/table/table-row/table-row";
 import GetWeddingList from "@/api/main/get-wedding-list";
 import GetWeddingInfo from "@/api/main/get-wedding-info";
 import PutUpdateWedding from "@/api/main/put-update-wedding";
+import PostCreateWedding from "@/api/main/post-create-wedding";
 import {
     Wedding,
-    WeddingDetail,
     TableWedding,
     toggleWedding,
     selectAllWedding,
     UpdatedWedding,
     setWeddingDetail,
+    NewWedding,
 } from "@/redux/slice/wedding-slice";
 import {
     getFoodName,
@@ -77,6 +78,25 @@ export default function Page() {
     const [currentNewFood, setCurrentNewFood] = useState<string | undefined>(undefined);
     const [currentNewService, setCurrentNewService] = useState<string | undefined>(undefined);
 
+    const [isCreatingNewWedding, setIsCreatingNewWedding] = useState(false);
+    const [newWedding, setNewWedding] = useState<NewWedding | undefined>({
+        groom_name: "",
+        bride_name: "",
+        room_id: "",
+        shift_name: "",
+        wedding_date: "",
+        num_table: 0,
+        phone_number: "",
+        note: "",
+        payment_status: 0,
+        food_orders: [],
+        service_orders: [],
+    });
+
+    const [creatingStatus, setCreatingStatus] = useState<"idle" | "loading" | "success" | "error">(
+        "idle",
+    );
+
     useEffect(() => {
         if (shiftList.length === 0 || roomList.length === 0) {
             return;
@@ -119,6 +139,19 @@ export default function Page() {
         });
     }, [updatedWedding, roomList]);
 
+    useEffect(() => {
+        if (!newWedding) {
+            return;
+        }
+        const room = roomList.find((r) => r.room_id === newWedding.room_id);
+        const min_table = room?.min_table || 0;
+        const max_table = room?.max_table || 100;
+        setTableRange({
+            min_table,
+            max_table,
+        });
+    }, [newWedding]);
+
     const tableHeadColumns = [
         {
             id: "groom-name",
@@ -143,9 +176,25 @@ export default function Page() {
     ];
 
     const handleWeddingInfoChange = (
-        field: keyof WeddingDetail["wedding_info"],
+        field: keyof UpdatedWedding,
         value: string | number,
+        isNewWedding: boolean = false,
     ) => {
+        if (isNewWedding) {
+            setNewWedding((prevState) => {
+                if (prevState) {
+                    return {
+                        ...prevState,
+                        [field]: value,
+                    };
+                }
+                return prevState;
+            });
+            return;
+        }
+
+        console.log(value, typeof value);
+
         setUpdatedWedding((prevState) => {
             if (prevState) {
                 return {
@@ -163,7 +212,30 @@ export default function Page() {
             note: string;
             price: number;
         },
+        isNewWedding: boolean = false,
     ) => {
+        if (isNewWedding) {
+            setNewWedding((prevState) => {
+                if (prevState) {
+                    return {
+                        ...prevState,
+                        food_orders: prevState.food_orders.map((foodOrder) => {
+                            if (foodOrder.fo_id === foodId) {
+                                return {
+                                    ...foodOrder,
+                                    fo_note: value.note,
+                                    fo_price: value.price,
+                                };
+                            }
+                            return foodOrder;
+                        }),
+                    };
+                }
+                return prevState;
+            });
+            return;
+        }
+
         setUpdatedWedding((prevState) => {
             if (prevState) {
                 return {
@@ -191,7 +263,31 @@ export default function Page() {
             num: number;
             price: number;
         },
+        isNewWedding: boolean = false,
     ) => {
+        if (isNewWedding) {
+            setNewWedding((prevState) => {
+                if (prevState) {
+                    return {
+                        ...prevState,
+                        service_orders: prevState.service_orders.map((serviceOrder) => {
+                            if (serviceOrder.service_id === serviceId) {
+                                return {
+                                    ...serviceOrder,
+                                    note: value.note,
+                                    num: value.num,
+                                    service_price: value.price,
+                                };
+                            }
+                            return serviceOrder;
+                        }),
+                    };
+                }
+                return prevState;
+            });
+            return;
+        }
+
         setUpdatedWedding((prevState) => {
             if (prevState) {
                 return {
@@ -224,10 +320,39 @@ export default function Page() {
             note: string;
             price: number;
         },
+        isNewWedding: boolean = false,
     ) => {
         if (type === "add" && weddingDetail?.food_orders.find((f) => f.fo_id === foodId)) {
             return;
         }
+        if (isNewWedding) {
+            setNewWedding((prevState) => {
+                if (prevState) {
+                    if (type === "delete") {
+                        return {
+                            ...prevState,
+                            food_orders: prevState.food_orders.filter(
+                                (foodOrder) => foodOrder.fo_id !== foodId,
+                            ),
+                        };
+                    }
+                    return {
+                        ...prevState,
+                        food_orders: [
+                            ...prevState.food_orders,
+                            {
+                                fo_id: foodId,
+                                fo_note: note,
+                                fo_price: price,
+                            },
+                        ],
+                    };
+                }
+                return prevState;
+            });
+            return;
+        }
+
         setUpdatedWedding((prevState) => {
             if (prevState) {
                 if (type === "delete") {
@@ -288,6 +413,7 @@ export default function Page() {
             num: number;
             price: number;
         },
+        isNewWedding: boolean = false,
     ) => {
         if (
             type === "add" &&
@@ -295,6 +421,35 @@ export default function Page() {
         ) {
             return;
         }
+        if (isNewWedding) {
+            setNewWedding((prevState) => {
+                if (prevState) {
+                    if (type === "delete") {
+                        return {
+                            ...prevState,
+                            service_orders: prevState.service_orders.filter(
+                                (serviceOrder) => serviceOrder.service_id !== serviceId,
+                            ),
+                        };
+                    }
+                    return {
+                        ...prevState,
+                        service_orders: [
+                            ...prevState.service_orders,
+                            {
+                                service_id: serviceId,
+                                note,
+                                num,
+                                service_price: price,
+                            },
+                        ],
+                    };
+                }
+                return prevState;
+            });
+            return;
+        }
+
         setUpdatedWedding((prevState) => {
             if (prevState) {
                 if (type === "delete") {
@@ -374,26 +529,64 @@ export default function Page() {
         }
     }
 
+    async function handleCreateWedding() {
+        if (newWedding) {
+            try {
+                setCreatingStatus("loading");
+                const res = await PostCreateWedding({
+                    dispatch,
+                    wedding_info: newWedding,
+                });
+                if (res) {
+                    setCreatingStatus("success");
+                    setTimeout(() => {
+                        setCreatingStatus("idle");
+                    }, 3000);
+                } else {
+                    setCreatingStatus("error");
+                    setTimeout(() => {
+                        setCreatingStatus("idle");
+                    }, 3000);
+                }
+            } catch (error) {
+                setCreatingStatus("error");
+                console.error(error);
+                setTimeout(() => {
+                    setCreatingStatus("idle");
+                }, 3000);
+            }
+        }
+    }
+
     return (
         <ScreenContent
             buttonAction={() => {
-                console.log("cc");
+                setIsCreatingNewWedding(true);
             }}
             buttonText="NHẤN NÚT ĐÊ"
         >
-            <div className="w-full overflow-y-auto">
-                <DefaultTableHead
-                    columns={tableHeadColumns}
-                    onSelectAllClick={() => {
-                        if (selectedWeddingCount < countWeddings) {
-                            dispatch(selectAllWedding(true));
-                        } else if (selectedWeddingCount === countWeddings) {
-                            dispatch(selectAllWedding(false));
-                        }
-                    }}
-                    rowCount={countWeddings}
-                    numSelected={selectedWeddingCount}
-                />
+            <div className="flex flex-row gap-4">
+                <Button variant="contained" disabled={selectedWeddingCount <= 0}>
+                    XÁC NHẬN
+                </Button>
+                <Button variant="contained" color="warning" disabled={selectedWeddingCount <= 0}>
+                    XOÁ
+                </Button>
+            </div>
+            <br />
+            <DefaultTableHead
+                columns={tableHeadColumns}
+                onSelectAllClick={() => {
+                    if (selectedWeddingCount < countWeddings) {
+                        dispatch(selectAllWedding(true));
+                    } else if (selectedWeddingCount === countWeddings) {
+                        dispatch(selectAllWedding(false));
+                    }
+                }}
+                rowCount={countWeddings}
+                numSelected={selectedWeddingCount}
+            />
+            <div className="w-full overflow-y-auto" style={{ height: "calc(100% - 220px)" }}>
                 {tableWeddingList.map((row, index) => (
                     <DefaultTableRow
                         // eslint-disable-next-line react/no-array-index-key
@@ -454,529 +647,493 @@ export default function Page() {
                     >
                         <span className="text-2xl font-[700]">THÔNG TIN TIỆC CƯỚI</span>
                         <div className="w-full h-full overflow-auto p-4">
-                            {currentWedding && (
-                                <>
-                                    <span className="font-bold">THAY ĐỔI THÔNG TIN</span>
-                                    <div className="grid grid-cols-2 gap-4 pt-4">
-                                        <TextField
-                                            label="Chú rể"
-                                            id="groom_name"
-                                            defaultValue={currentWedding.fullData.groom_name}
-                                            onChange={(e) => {
-                                                handleWeddingInfoChange(
-                                                    "groom_name",
-                                                    e.target.value,
-                                                );
-                                            }}
-                                        />
-                                        <TextField
-                                            label="Cô dâu"
-                                            id="bride_name"
-                                            defaultValue={currentWedding.fullData.bride_name}
-                                            onChange={(e) => {
-                                                handleWeddingInfoChange(
-                                                    "bride_name",
-                                                    e.target.value,
-                                                );
-                                            }}
-                                        />
-                                        <TextField
-                                            label="Số điện thoại"
-                                            id="phone_number"
-                                            defaultValue={weddingDetail.wedding_info.phone_number}
-                                            onChange={(e) => {
-                                                handleWeddingInfoChange(
-                                                    "phone_number",
-                                                    e.target.value,
-                                                );
-                                            }}
-                                        />
-                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                            <DesktopDateTimePicker
-                                                label="Ngày cưới"
-                                                defaultValue={dayjs(
-                                                    currentWedding.fullData.wedding_date,
+                            <span className="font-bold">THAY ĐỔI THÔNG TIN</span>
+                            <div className="grid grid-cols-2 gap-4 pt-4">
+                                <TextField
+                                    label="Chú rể"
+                                    id="groom_name"
+                                    defaultValue={currentWedding.fullData.groom_name}
+                                    onChange={(e) => {
+                                        handleWeddingInfoChange("groom_name", e.target.value);
+                                    }}
+                                />
+                                <TextField
+                                    label="Cô dâu"
+                                    id="bride_name"
+                                    defaultValue={currentWedding.fullData.bride_name}
+                                    onChange={(e) => {
+                                        handleWeddingInfoChange("bride_name", e.target.value);
+                                    }}
+                                />
+                                <TextField
+                                    label="Số điện thoại"
+                                    id="phone_number"
+                                    defaultValue={weddingDetail.wedding_info.phone_number}
+                                    onChange={(e) => {
+                                        handleWeddingInfoChange("phone_number", e.target.value);
+                                    }}
+                                />
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DesktopDateTimePicker
+                                        label="Ngày cưới"
+                                        defaultValue={dayjs(currentWedding.fullData.wedding_date)}
+                                        ampm={false}
+                                        format="DD/MM/YYYY HH:mm"
+                                        onChange={(date) => {
+                                            if (!date) {
+                                                console.error("Invalid date");
+                                                return;
+                                            }
+                                            handleWeddingInfoChange(
+                                                "wedding_date",
+                                                date.toISOString(),
+                                            );
+                                        }}
+                                    />
+                                </LocalizationProvider>
+                                <FormControl fullWidth>
+                                    <InputLabel id="room_id-label">Sảnh</InputLabel>
+                                    <Select
+                                        labelId="room_id-label"
+                                        id="room_id"
+                                        label="Sảnh"
+                                        defaultValue={currentWedding.fullData.room_id}
+                                        onChange={(e) => {
+                                            handleWeddingInfoChange("room_id", e.target.value);
+                                        }}
+                                    >
+                                        {roomList.map((room) => (
+                                            <MenuItem key={room.room_id} value={room.room_id}>
+                                                {room.room_name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl fullWidth>
+                                    <InputLabel id="shift_id-label">Ca</InputLabel>
+                                    <Select
+                                        labelId="shift_id-label"
+                                        id="shift_id"
+                                        label="Ca"
+                                        defaultValue={currentWedding.fullData.shift_name}
+                                        onChange={(e) => {
+                                            handleWeddingInfoChange("shift_name", e.target.value);
+                                        }}
+                                    >
+                                        {shiftList.map((shift) => (
+                                            <MenuItem
+                                                key={shift.shift_name}
+                                                value={shift.shift_name}
+                                            >
+                                                {shift.note}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl fullWidth>
+                                    <InputLabel id="num_table-label">Số bàn</InputLabel>
+                                    <Select
+                                        labelId="num_table-label"
+                                        id="num_table"
+                                        label="Số bàn"
+                                        defaultValue={currentWedding.fullData.num_table}
+                                        onChange={(e) => {
+                                            handleWeddingInfoChange("num_table", e.target.value);
+                                        }}
+                                    >
+                                        {tableRange.min_table && tableRange.max_table ? (
+                                            Array.from(
+                                                {
+                                                    length:
+                                                        tableRange.max_table -
+                                                        tableRange.min_table +
+                                                        1,
+                                                },
+                                                (_, i) => i + tableRange.min_table,
+                                            ).map((num) => (
+                                                <MenuItem key={num} value={num}>
+                                                    {num}
+                                                </MenuItem>
+                                            ))
+                                        ) : (
+                                            <MenuItem value={0}>0</MenuItem>
+                                        )}
+                                    </Select>
+                                </FormControl>
+                                <TextField
+                                    label="Tình trạng (%)"
+                                    id="payment_status"
+                                    type="number"
+                                    defaultValue={weddingDetail.invoice.payment_status}
+                                    onChange={(e) => {
+                                        handleWeddingInfoChange(
+                                            "payment_status",
+                                            Number(e.target.value),
+                                        );
+                                    }}
+                                />
+                                <TextField
+                                    label="Ghi chú"
+                                    id="note"
+                                    defaultValue={weddingDetail.wedding_info.note}
+                                    onChange={(e) => {
+                                        handleWeddingInfoChange("note", e.target.value);
+                                    }}
+                                />
+                            </div>
+                            <br />
+                            <span className="font-bold">THÔNG TIN CỐ ĐỊNH</span>
+                            <div className="grid grid-cols-2 gap-4 pt-4">
+                                <TextField
+                                    label="Loại sảnh"
+                                    id="room_type_name"
+                                    defaultValue={weddingDetail.wedding_info.room_type_name}
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="ID"
+                                    id="wedding_id"
+                                    defaultValue={currentWedding.fullData.wedding_id}
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Tạo bởi"
+                                    id="created_by"
+                                    defaultValue={weddingDetail.wedding_info.created_by}
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Xác nhận bởi"
+                                    id="confirmed_by"
+                                    defaultValue={weddingDetail.wedding_info.confirm_by}
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                                <TextField
+                                    label="Ngày tạo"
+                                    id="created_at"
+                                    defaultValue={currentWedding.fullData.created_at}
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                                <TextField
+                                    label="Ngày cập nhật"
+                                    id="updated_at"
+                                    defaultValue={currentWedding.fullData.updated_at}
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                                <TextField
+                                    label="Giá sảnh"
+                                    id="room_type_price"
+                                    defaultValue={formatPrice(
+                                        weddingDetail.wedding_info.room_type_price,
+                                    )}
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                                <TextField
+                                    label="Thuế (%)"
+                                    id="invoice_tax"
+                                    defaultValue={weddingDetail.invoice.invoice_tax}
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                    // onChange={(e) => {
+                                    //     setUpdatedWedding((prevState) => {
+                                    //         if (prevState) {
+                                    //             return {
+                                    //                 ...prevState,
+                                    //                 invoice: {
+                                    //                     ...prevState.invoice,
+                                    //                     invoice_tax: Number(e.target.value),
+                                    //                 },
+                                    //             };
+                                    //         }
+                                    //         return prevState;
+                                    //     });
+                                    // }}
+                                />
+                                <TextField
+                                    label="Ngày thanh toán"
+                                    id="invoice_date"
+                                    defaultValue={weddingDetail.invoice.invoice_date}
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                                <TextField
+                                    label="Tổng tiền"
+                                    id="total"
+                                    defaultValue={formatPrice(weddingDetail.invoice.total)}
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                            </div>
+                            <br />
+                            <Divider />
+                            <br />
+                            <span className="font-bold">THÔNG TIN MÓN ĂN</span>
+                            <br />
+                            <span className="font-bold">
+                                Số lượng: {weddingDetail.food_orders.length}
+                            </span>
+                            <div>
+                                {weddingDetail.food_orders.map((foodOrder, index) => (
+                                    <React.Fragment key={foodOrder.fo_id}>
+                                        <br />
+                                        <div className="flex flex-col">
+                                            <span className="font-bold flex flex-row justify-between">
+                                                {index + 1} - Món ăn:{" "}
+                                                {getFoodName(foodList, foodOrder.fo_id)}
+                                                <Button
+                                                    variant="contained"
+                                                    color="warning"
+                                                    className="flex-shrink-0"
+                                                    onClick={() => {
+                                                        handleUpdateFoodOrder("delete", {
+                                                            foodId: foodOrder.fo_id,
+                                                            note: foodOrder.fo_note,
+                                                            price: foodOrder.fo_price,
+                                                        });
+                                                    }}
+                                                >
+                                                    Xoá
+                                                </Button>
+                                            </span>
+                                            <TextField
+                                                label="Ghi chú"
+                                                multiline
+                                                rows={4}
+                                                defaultValue={foodOrder.fo_note}
+                                                variant="outlined"
+                                                margin="normal"
+                                                onChange={(e) => {
+                                                    handleChangeFoodDetail(foodOrder.fo_id, {
+                                                        note: e.target.value,
+                                                        price: foodOrder.fo_price,
+                                                    });
+                                                }}
+                                            />
+                                            <TextField
+                                                label="Giá món ăn"
+                                                value={formatPrice(
+                                                    updatedWedding?.food_orders.find(
+                                                        (f) => f.fo_id === foodOrder.fo_id,
+                                                    )?.fo_price || 0,
                                                 )}
-                                                ampm={false}
-                                                format="DD/MM/YYYY HH:mm"
-                                                onChange={(date) => {
-                                                    if (!date) {
-                                                        console.error("Invalid date");
-                                                        return;
-                                                    }
-                                                    handleWeddingInfoChange(
-                                                        "wedding_date",
-                                                        date.toISOString(),
+                                                margin="normal"
+                                                onChange={(e) => {
+                                                    const extractedPrice = handleVNDInput(
+                                                        e.target.value,
+                                                    );
+
+                                                    handleChangeFoodDetail(foodOrder.fo_id, {
+                                                        note: foodOrder.fo_note,
+                                                        price: extractedPrice,
+                                                    });
+                                                }}
+                                            />
+                                        </div>
+                                    </React.Fragment>
+                                ))}
+                                <br />
+                                <Divider />
+                                <br />
+                                <div className="flex flex-row gap-10">
+                                    <FormControl className="w-full">
+                                        <InputLabel id="food_id-label">Món ăn</InputLabel>
+                                        <Select
+                                            labelId="food_id-label"
+                                            id="add-food_id"
+                                            label="Món ăn"
+                                            onChange={(e) => {
+                                                setCurrentNewFood(String(e.target.value));
+                                            }}
+                                        >
+                                            {foodList.map((food, index) => (
+                                                <MenuItem
+                                                    key={food.food_id}
+                                                    value={food.food_id}
+                                                    selected={index === 0}
+                                                >
+                                                    {food.food_name}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        className="flex-shrink-0"
+                                        onClick={() => {
+                                            if (!currentNewFood) {
+                                                return;
+                                            }
+                                            handleUpdateFoodOrder("add", {
+                                                foodId: currentNewFood,
+                                                note: "",
+                                                price:
+                                                    foodList.find(
+                                                        (f) => f.food_id === currentNewFood,
+                                                    )?.food_price || 0,
+                                            });
+                                        }}
+                                    >
+                                        THÊM MÓN ĂN
+                                    </Button>
+                                </div>
+                            </div>
+                            <br />
+                            <Divider />
+                            <br />
+                            <span className="font-bold">THÔNG TIN DỊCH VỤ</span>
+                            <br />
+                            <span className="font-bold">
+                                Số lượng: {weddingDetail.service_orders.length}
+                            </span>
+                            <div>
+                                {weddingDetail.service_orders.map((serviceOrder, index) => (
+                                    <React.Fragment key={serviceOrder.service_id}>
+                                        <br />
+                                        <div className="flex flex-col">
+                                            <span className="font-bold flex flex-row justify-between">
+                                                {index + 1} - Dịch vụ:{" "}
+                                                {getServiceName(
+                                                    serviceList,
+                                                    serviceOrder.service_id,
+                                                )}
+                                                <Button
+                                                    variant="contained"
+                                                    color="warning"
+                                                    className="flex-shrink-0"
+                                                    onClick={() => {
+                                                        handleUpdateServiceOrder("delete", {
+                                                            serviceId: serviceOrder.service_id,
+                                                            note: serviceOrder.note,
+                                                            num: serviceOrder.num,
+                                                            price: serviceOrder.service_price,
+                                                        });
+                                                    }}
+                                                >
+                                                    Xoá
+                                                </Button>
+                                            </span>
+                                            <TextField
+                                                label="Số lượng"
+                                                defaultValue={serviceOrder.num}
+                                                margin="normal"
+                                                onChange={(e) => {
+                                                    handleChangeServiceDetail(
+                                                        serviceOrder.service_id,
+                                                        {
+                                                            note: serviceOrder.note,
+                                                            num: Number(e.target.value),
+                                                            price: serviceOrder.service_price,
+                                                        },
                                                     );
                                                 }}
                                             />
-                                        </LocalizationProvider>
-                                        <FormControl fullWidth>
-                                            <InputLabel id="room_id-label">Sảnh</InputLabel>
-                                            <Select
-                                                labelId="room_id-label"
-                                                id="room_id"
-                                                label="Sảnh"
-                                                defaultValue={currentWedding.fullData.room_id}
+                                            <TextField
+                                                label="Ghi chú"
+                                                multiline
+                                                rows={4}
+                                                defaultValue={serviceOrder.note}
+                                                variant="outlined"
+                                                margin="normal"
                                                 onChange={(e) => {
-                                                    handleWeddingInfoChange(
-                                                        "room_id",
-                                                        e.target.value,
-                                                    );
-                                                }}
-                                            >
-                                                {roomList.map((room) => (
-                                                    <MenuItem
-                                                        key={room.room_id}
-                                                        value={room.room_id}
-                                                    >
-                                                        {room.room_name}
-                                                    </MenuItem>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
-                                        <FormControl fullWidth>
-                                            <InputLabel id="shift_id-label">Ca</InputLabel>
-                                            <Select
-                                                labelId="shift_id-label"
-                                                id="shift_id"
-                                                label="Ca"
-                                                defaultValue={currentWedding.fullData.shift_name}
-                                                onChange={(e) => {
-                                                    handleWeddingInfoChange(
-                                                        "shift_name",
-                                                        e.target.value,
-                                                    );
-                                                }}
-                                            >
-                                                {shiftList.map((shift) => (
-                                                    <MenuItem
-                                                        key={shift.shift_name}
-                                                        value={shift.shift_name}
-                                                    >
-                                                        {shift.note}
-                                                    </MenuItem>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
-                                        <FormControl fullWidth>
-                                            <InputLabel id="num_table-label">Số bàn</InputLabel>
-                                            <Select
-                                                labelId="num_table-label"
-                                                id="num_table"
-                                                label="Số bàn"
-                                                defaultValue={currentWedding.fullData.num_table}
-                                                onChange={(e) => {
-                                                    handleWeddingInfoChange(
-                                                        "num_table",
-                                                        e.target.value,
-                                                    );
-                                                }}
-                                            >
-                                                {tableRange.min_table && tableRange.max_table ? (
-                                                    Array.from(
+                                                    handleChangeServiceDetail(
+                                                        serviceOrder.service_id,
                                                         {
-                                                            length:
-                                                                tableRange.max_table -
-                                                                tableRange.min_table +
-                                                                1,
+                                                            note: e.target.value,
+                                                            num: serviceOrder.num,
+                                                            price: serviceOrder.service_price,
                                                         },
-                                                        (_, i) => i + tableRange.min_table,
-                                                    ).map((num) => (
-                                                        <MenuItem key={num} value={num}>
-                                                            {num}
-                                                        </MenuItem>
-                                                    ))
-                                                ) : (
-                                                    <MenuItem value={0}>0</MenuItem>
+                                                    );
+                                                }}
+                                            />
+                                            <TextField
+                                                label="Giá dịch vụ"
+                                                defaultValue={formatPrice(
+                                                    serviceOrder.service_price,
                                                 )}
-                                            </Select>
-                                        </FormControl>
-                                        <TextField
-                                            label="Ghi chú"
-                                            id="note"
-                                            defaultValue={weddingDetail.wedding_info.note}
+                                                margin="normal"
+                                                onChange={(e) => {
+                                                    handleChangeServiceDetail(
+                                                        serviceOrder.service_id,
+                                                        {
+                                                            note: serviceOrder.note,
+                                                            num: serviceOrder.num,
+                                                            price: Number(e.target.value),
+                                                        },
+                                                    );
+                                                }}
+                                            />
+                                        </div>
+                                    </React.Fragment>
+                                ))}
+                                <br />
+                                <Divider />
+                                <br />
+                                <div className="flex flex-row gap-10">
+                                    <FormControl className="w-full">
+                                        <InputLabel id="service_id-label">Dịch vụ</InputLabel>
+                                        <Select
+                                            labelId="service_id-label"
+                                            id="add-service_id"
+                                            label="Dịch vụ"
                                             onChange={(e) => {
-                                                handleWeddingInfoChange("note", e.target.value);
+                                                setCurrentNewService(String(e.target.value));
                                             }}
-                                        />
-                                    </div>
-                                    <br />
-                                    <span className="font-bold">THÔNG TIN CỐ ĐỊNH</span>
-                                    <div className="grid grid-cols-2 gap-4 pt-4">
-                                        <TextField
-                                            label="Loại sảnh"
-                                            id="room_type_name"
-                                            defaultValue={weddingDetail.wedding_info.room_type_name}
-                                            InputProps={{
-                                                readOnly: true,
-                                            }}
-                                        />
-                                        <TextField
-                                            fullWidth
-                                            label="ID"
-                                            id="wedding_id"
-                                            defaultValue={currentWedding.fullData.wedding_id}
-                                            InputProps={{
-                                                readOnly: true,
-                                            }}
-                                        />
-                                        <TextField
-                                            fullWidth
-                                            label="Tạo bởi"
-                                            id="created_by"
-                                            defaultValue={weddingDetail.wedding_info.created_by}
-                                            InputProps={{
-                                                readOnly: true,
-                                            }}
-                                        />
-                                        <TextField
-                                            fullWidth
-                                            label="Xác nhận bởi"
-                                            id="confirmed_by"
-                                            defaultValue={weddingDetail.wedding_info.confirm_by}
-                                            InputProps={{
-                                                readOnly: true,
-                                            }}
-                                        />
-                                        <TextField
-                                            label="Ngày tạo"
-                                            id="created_at"
-                                            defaultValue={currentWedding.fullData.created_at}
-                                            InputProps={{
-                                                readOnly: true,
-                                            }}
-                                        />
-                                        <TextField
-                                            label="Ngày cập nhật"
-                                            id="updated_at"
-                                            defaultValue={currentWedding.fullData.updated_at}
-                                            InputProps={{
-                                                readOnly: true,
-                                            }}
-                                        />
-                                        <TextField
-                                            label="Giá sảnh"
-                                            id="room_type_price"
-                                            defaultValue={formatPrice(
-                                                weddingDetail.wedding_info.room_type_price,
-                                            )}
-                                            InputProps={{
-                                                readOnly: true,
-                                            }}
-                                        />
-                                        <TextField
-                                            label="Thuế (%)"
-                                            id="invoice_tax"
-                                            defaultValue={weddingDetail.invoice.invoice_tax}
-                                            InputProps={{
-                                                readOnly: true,
-                                            }}
-                                            // onChange={(e) => {
-                                            //     setUpdatedWedding((prevState) => {
-                                            //         if (prevState) {
-                                            //             return {
-                                            //                 ...prevState,
-                                            //                 invoice: {
-                                            //                     ...prevState.invoice,
-                                            //                     invoice_tax: Number(e.target.value),
-                                            //                 },
-                                            //             };
-                                            //         }
-                                            //         return prevState;
-                                            //     });
-                                            // }}
-                                        />
-                                        <TextField
-                                            label="Ngày thanh toán"
-                                            id="invoice_date"
-                                            defaultValue={weddingDetail.invoice.invoice_date}
-                                            InputProps={{
-                                                readOnly: true,
-                                            }}
-                                        />
-                                        <TextField
-                                            label="Tình trạng (%)"
-                                            id="payment_status"
-                                            defaultValue={weddingDetail.invoice.payment_status}
-                                            InputProps={{
-                                                readOnly: true,
-                                            }}
-                                        />
-                                        <TextField
-                                            label="Tổng tiền"
-                                            id="total"
-                                            defaultValue={formatPrice(weddingDetail.invoice.total)}
-                                            InputProps={{
-                                                readOnly: true,
-                                            }}
-                                        />
-                                    </div>
-                                    <br />
-                                    <Divider />
-                                    <br />
-                                    <span className="font-bold">THÔNG TIN MÓN ĂN</span>
-                                    <br />
-                                    <span className="font-bold">
-                                        Số lượng: {weddingDetail.food_orders.length}
-                                    </span>
-                                    <div>
-                                        {weddingDetail.food_orders.map((foodOrder, index) => (
-                                            <React.Fragment key={foodOrder.fo_id}>
-                                                <br />
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold flex flex-row justify-between">
-                                                        {index + 1} - Món ăn:{" "}
-                                                        {getFoodName(foodList, foodOrder.fo_id)}
-                                                        <Button
-                                                            variant="contained"
-                                                            color="warning"
-                                                            className="flex-shrink-0"
-                                                            onClick={() => {
-                                                                handleUpdateFoodOrder("delete", {
-                                                                    foodId: foodOrder.fo_id,
-                                                                    note: foodOrder.fo_note,
-                                                                    price: foodOrder.fo_price,
-                                                                });
-                                                            }}
-                                                        >
-                                                            Xoá
-                                                        </Button>
-                                                    </span>
-                                                    <TextField
-                                                        label="Ghi chú"
-                                                        multiline
-                                                        rows={4}
-                                                        defaultValue={foodOrder.fo_note}
-                                                        variant="outlined"
-                                                        margin="normal"
-                                                        onChange={(e) => {
-                                                            handleChangeFoodDetail(
-                                                                foodOrder.fo_id,
-                                                                {
-                                                                    note: e.target.value,
-                                                                    price: foodOrder.fo_price,
-                                                                },
-                                                            );
-                                                        }}
-                                                    />
-                                                    <TextField
-                                                        label="Giá món ăn"
-                                                        value={formatPrice(
-                                                            updatedWedding?.food_orders.find(
-                                                                (f) => f.fo_id === foodOrder.fo_id,
-                                                            )?.fo_price || 0,
-                                                        )}
-                                                        margin="normal"
-                                                        onChange={(e) => {
-                                                            const extractedPrice = handleVNDInput(
-                                                                e.target.value,
-                                                            );
-
-                                                            handleChangeFoodDetail(
-                                                                foodOrder.fo_id,
-                                                                {
-                                                                    note: foodOrder.fo_note,
-                                                                    price: extractedPrice,
-                                                                },
-                                                            );
-                                                        }}
-                                                    />
-                                                </div>
-                                            </React.Fragment>
-                                        ))}
-                                        <br />
-                                        <Divider />
-                                        <br />
-                                        <div className="flex flex-row gap-10">
-                                            <FormControl className="w-full">
-                                                <InputLabel id="food_id-label">Món ăn</InputLabel>
-                                                <Select
-                                                    labelId="food_id-label"
-                                                    id="add-food_id"
-                                                    label="Món ăn"
-                                                    onChange={(e) => {
-                                                        setCurrentNewFood(String(e.target.value));
-                                                    }}
+                                        >
+                                            {serviceList.map((service, index) => (
+                                                <MenuItem
+                                                    key={service.service_id}
+                                                    value={service.service_id}
+                                                    selected={index === 0}
                                                 >
-                                                    {foodList.map((food, index) => (
-                                                        <MenuItem
-                                                            key={food.food_id}
-                                                            value={food.food_id}
-                                                            selected={index === 0}
-                                                        >
-                                                            {food.food_name}
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-                                            <Button
-                                                variant="contained"
-                                                color="primary"
-                                                className="flex-shrink-0"
-                                                onClick={() => {
-                                                    if (!currentNewFood) {
-                                                        return;
-                                                    }
-                                                    handleUpdateFoodOrder("add", {
-                                                        foodId: currentNewFood,
-                                                        note: "",
-                                                        price:
-                                                            foodList.find(
-                                                                (f) => f.food_id === currentNewFood,
-                                                            )?.food_price || 0,
-                                                    });
-                                                }}
-                                            >
-                                                THÊM MÓN ĂN
-                                            </Button>
-                                        </div>
-                                    </div>
-                                    <br />
-                                    <Divider />
-                                    <br />
-                                    <span className="font-bold">THÔNG TIN DỊCH VỤ</span>
-                                    <br />
-                                    <span className="font-bold">
-                                        Số lượng: {weddingDetail.service_orders.length}
-                                    </span>
-                                    <div>
-                                        {weddingDetail.service_orders.map((serviceOrder, index) => (
-                                            <React.Fragment key={serviceOrder.service_id}>
-                                                <br />
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold flex flex-row justify-between">
-                                                        {index + 1} - Dịch vụ:{" "}
-                                                        {getServiceName(
-                                                            serviceList,
-                                                            serviceOrder.service_id,
-                                                        )}
-                                                        <Button
-                                                            variant="contained"
-                                                            color="warning"
-                                                            className="flex-shrink-0"
-                                                            onClick={() => {
-                                                                handleUpdateServiceOrder("delete", {
-                                                                    serviceId:
-                                                                        serviceOrder.service_id,
-                                                                    note: serviceOrder.note,
-                                                                    num: serviceOrder.num,
-                                                                    price: serviceOrder.service_price,
-                                                                });
-                                                            }}
-                                                        >
-                                                            Xoá
-                                                        </Button>
-                                                    </span>
-                                                    <TextField
-                                                        label="Số lượng"
-                                                        defaultValue={serviceOrder.num}
-                                                        margin="normal"
-                                                        onChange={(e) => {
-                                                            handleChangeServiceDetail(
-                                                                serviceOrder.service_id,
-                                                                {
-                                                                    note: serviceOrder.note,
-                                                                    num: Number(e.target.value),
-                                                                    price: serviceOrder.service_price,
-                                                                },
-                                                            );
-                                                        }}
-                                                    />
-                                                    <TextField
-                                                        label="Ghi chú"
-                                                        multiline
-                                                        rows={4}
-                                                        defaultValue={serviceOrder.note}
-                                                        variant="outlined"
-                                                        margin="normal"
-                                                        onChange={(e) => {
-                                                            handleChangeServiceDetail(
-                                                                serviceOrder.service_id,
-                                                                {
-                                                                    note: e.target.value,
-                                                                    num: serviceOrder.num,
-                                                                    price: serviceOrder.service_price,
-                                                                },
-                                                            );
-                                                        }}
-                                                    />
-                                                    <TextField
-                                                        label="Giá dịch vụ"
-                                                        defaultValue={formatPrice(
-                                                            serviceOrder.service_price,
-                                                        )}
-                                                        margin="normal"
-                                                        onChange={(e) => {
-                                                            handleChangeServiceDetail(
-                                                                serviceOrder.service_id,
-                                                                {
-                                                                    note: serviceOrder.note,
-                                                                    num: serviceOrder.num,
-                                                                    price: Number(e.target.value),
-                                                                },
-                                                            );
-                                                        }}
-                                                    />
-                                                </div>
-                                            </React.Fragment>
-                                        ))}
-                                        <br />
-                                        <Divider />
-                                        <br />
-                                        <div className="flex flex-row gap-10">
-                                            <FormControl className="w-full">
-                                                <InputLabel id="service_id-label">
-                                                    Dịch vụ
-                                                </InputLabel>
-                                                <Select
-                                                    labelId="service_id-label"
-                                                    id="add-service_id"
-                                                    label="Dịch vụ"
-                                                    onChange={(e) => {
-                                                        setCurrentNewService(
-                                                            String(e.target.value),
-                                                        );
-                                                    }}
-                                                >
-                                                    {serviceList.map((service, index) => (
-                                                        <MenuItem
-                                                            key={service.service_id}
-                                                            value={service.service_id}
-                                                            selected={index === 0}
-                                                        >
-                                                            {service.service_name}
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-                                            <Button
-                                                variant="contained"
-                                                color="primary"
-                                                className="flex-shrink-0"
-                                                onClick={() => {
-                                                    if (!currentNewService) {
-                                                        return;
-                                                    }
-                                                    handleUpdateServiceOrder("add", {
-                                                        serviceId: currentNewService,
-                                                        note: "",
-                                                        num: 1,
-                                                        price:
-                                                            serviceList.find(
-                                                                (s) =>
-                                                                    s.service_id ===
-                                                                    currentNewService,
-                                                            )?.service_price || 0,
-                                                    });
-                                                }}
-                                            >
-                                                THÊM DỊCH VỤ
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
+                                                    {service.service_name}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        className="flex-shrink-0"
+                                        onClick={() => {
+                                            if (!currentNewService) {
+                                                return;
+                                            }
+                                            handleUpdateServiceOrder("add", {
+                                                serviceId: currentNewService,
+                                                note: "",
+                                                num: 1,
+                                                price:
+                                                    serviceList.find(
+                                                        (s) => s.service_id === currentNewService,
+                                                    )?.service_price || 0,
+                                            });
+                                        }}
+                                    >
+                                        THÊM DỊCH VỤ
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
                         <div className="flex gap-7">
                             <Button
@@ -1006,6 +1163,453 @@ export default function Page() {
                                 }}
                             >
                                 CẬP NHẬT
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isCreatingNewWedding && newWedding && (
+                <div className="absolute top-0 left-0 w-full h-full backdrop-blur-sm">
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            background: "#FFF",
+                            boxShadow: "0px 0px 20px 0px rgba(0, 0, 0, 0.25)",
+                            width: "800px",
+                            height: "600px",
+                            padding: "20px 40px",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: "20px",
+                            // overflowY: "auto",
+                        }}
+                    >
+                        <span className="text-2xl font-[700]">ĐẶT TIỆC CƯỚI</span>
+                        <div className="w-full h-full overflow-auto p-4">
+                            <div className="grid grid-cols-2 gap-4 pt-4">
+                                <TextField
+                                    label="Chú rể"
+                                    id="groom_name"
+                                    onChange={(e) => {
+                                        handleWeddingInfoChange("groom_name", e.target.value, true);
+                                    }}
+                                />
+                                <TextField
+                                    label="Cô dâu"
+                                    id="bride_name"
+                                    onChange={(e) => {
+                                        handleWeddingInfoChange("bride_name", e.target.value, true);
+                                    }}
+                                />
+                                <TextField
+                                    label="Số điện thoại"
+                                    id="phone_number"
+                                    onChange={(e) => {
+                                        handleWeddingInfoChange(
+                                            "phone_number",
+                                            e.target.value,
+                                            true,
+                                        );
+                                    }}
+                                />
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DesktopDateTimePicker
+                                        label="Ngày cưới"
+                                        ampm={false}
+                                        format="DD/MM/YYYY HH:mm"
+                                        onChange={(date) => {
+                                            if (!date) {
+                                                console.error("Invalid date");
+                                                return;
+                                            }
+                                            handleWeddingInfoChange(
+                                                "wedding_date",
+                                                date.toISOString(),
+                                                true,
+                                            );
+                                        }}
+                                    />
+                                </LocalizationProvider>
+                                <FormControl fullWidth>
+                                    <InputLabel id="room_id-label">Sảnh</InputLabel>
+                                    <Select
+                                        labelId="room_id-label"
+                                        id="room_id"
+                                        label="Sảnh"
+                                        onChange={(e) => {
+                                            handleWeddingInfoChange(
+                                                "room_id",
+                                                e.target.value as string,
+                                                true,
+                                            );
+                                        }}
+                                    >
+                                        {roomList.map((room) => (
+                                            <MenuItem key={room.room_id} value={room.room_id}>
+                                                {room.room_name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl fullWidth>
+                                    <InputLabel id="shift_id-label">Ca</InputLabel>
+                                    <Select
+                                        labelId="shift_id-label"
+                                        id="shift_id"
+                                        label="Ca"
+                                        onChange={(e) => {
+                                            handleWeddingInfoChange(
+                                                "shift_name",
+                                                e.target.value as string,
+                                                true,
+                                            );
+                                        }}
+                                    >
+                                        {shiftList.map((shift) => (
+                                            <MenuItem
+                                                key={shift.shift_name}
+                                                value={shift.shift_name}
+                                            >
+                                                {shift.note}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl fullWidth>
+                                    <InputLabel id="num_table-label">Số bàn</InputLabel>
+                                    <Select
+                                        labelId="num_table-label"
+                                        id="num_table"
+                                        label="Số bàn"
+                                        onChange={(e) => {
+                                            handleWeddingInfoChange(
+                                                "num_table",
+                                                e.target.value as string,
+                                                true,
+                                            );
+                                        }}
+                                    >
+                                        {tableRange.min_table && tableRange.max_table ? (
+                                            Array.from(
+                                                {
+                                                    length:
+                                                        tableRange.max_table -
+                                                        tableRange.min_table +
+                                                        1,
+                                                },
+                                                (_, i) => i + tableRange.min_table,
+                                            ).map((num) => (
+                                                <MenuItem key={num} value={num}>
+                                                    {num}
+                                                </MenuItem>
+                                            ))
+                                        ) : (
+                                            <MenuItem value={0}>0</MenuItem>
+                                        )}
+                                    </Select>
+                                </FormControl>
+                                <TextField
+                                    label="Tình trạng (%)"
+                                    id="payment_status"
+                                    type="number"
+                                    defaultValue={newWedding.payment_status}
+                                    onChange={(e) => {
+                                        handleWeddingInfoChange(
+                                            "payment_status",
+                                            e.target.value,
+                                            true,
+                                        );
+                                    }}
+                                />
+                                <TextField
+                                    label="Ghi chú"
+                                    id="note"
+                                    onChange={(e) => {
+                                        handleWeddingInfoChange("note", e.target.value, true);
+                                    }}
+                                />
+                            </div>
+                            <br />
+                            <Divider />
+                            <br />
+                            <span className="font-bold">THÔNG TIN MÓN ĂN</span>
+                            <br />
+                            <span className="font-bold">
+                                Số lượng: {newWedding.food_orders.length}
+                            </span>
+                            <div>
+                                {newWedding.food_orders.map((foodOrder, index) => (
+                                    <React.Fragment key={foodOrder.fo_id}>
+                                        <br />
+                                        <div className="flex flex-col">
+                                            <span className="font-bold flex flex-row justify-between">
+                                                {index + 1} - Món ăn:{" "}
+                                                {getFoodName(foodList, foodOrder.fo_id)}
+                                                <Button
+                                                    variant="contained"
+                                                    color="warning"
+                                                    className="flex-shrink-0"
+                                                    onClick={() => {
+                                                        handleUpdateFoodOrder("delete", {
+                                                            foodId: foodOrder.fo_id,
+                                                            note: foodOrder.fo_note,
+                                                            price: foodOrder.fo_price,
+                                                        });
+                                                    }}
+                                                >
+                                                    Xoá
+                                                </Button>
+                                            </span>
+                                            <TextField
+                                                label="Ghi chú"
+                                                multiline
+                                                rows={4}
+                                                defaultValue={foodOrder.fo_note}
+                                                variant="outlined"
+                                                margin="normal"
+                                                onChange={(e) => {
+                                                    handleChangeFoodDetail(foodOrder.fo_id, {
+                                                        note: e.target.value,
+                                                        price: foodOrder.fo_price,
+                                                    });
+                                                }}
+                                            />
+                                            <TextField
+                                                label="Giá món ăn"
+                                                value={formatPrice(
+                                                    updatedWedding?.food_orders.find(
+                                                        (f) => f.fo_id === foodOrder.fo_id,
+                                                    )?.fo_price || 0,
+                                                )}
+                                                margin="normal"
+                                                onChange={(e) => {
+                                                    const extractedPrice = handleVNDInput(
+                                                        e.target.value,
+                                                    );
+
+                                                    handleChangeFoodDetail(foodOrder.fo_id, {
+                                                        note: foodOrder.fo_note,
+                                                        price: extractedPrice,
+                                                    });
+                                                }}
+                                            />
+                                        </div>
+                                    </React.Fragment>
+                                ))}
+                                <br />
+                                <Divider />
+                                <br />
+                                <div className="flex flex-row gap-10">
+                                    <FormControl className="w-full">
+                                        <InputLabel id="food_id-label">Món ăn</InputLabel>
+                                        <Select
+                                            labelId="food_id-label"
+                                            id="add-food_id"
+                                            label="Món ăn"
+                                            onChange={(e) => {
+                                                setCurrentNewFood(String(e.target.value));
+                                            }}
+                                        >
+                                            {foodList.map((food, index) => (
+                                                <MenuItem
+                                                    key={food.food_id}
+                                                    value={food.food_id}
+                                                    selected={index === 0}
+                                                >
+                                                    {food.food_name}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        className="flex-shrink-0"
+                                        onClick={() => {
+                                            if (!currentNewFood) {
+                                                return;
+                                            }
+                                            handleUpdateFoodOrder("add", {
+                                                foodId: currentNewFood,
+                                                note: "",
+                                                price:
+                                                    foodList.find(
+                                                        (f) => f.food_id === currentNewFood,
+                                                    )?.food_price || 0,
+                                            });
+                                        }}
+                                    >
+                                        THÊM MÓN ĂN
+                                    </Button>
+                                </div>
+                            </div>
+                            <br />
+                            <Divider />
+                            <br />
+                            <span className="font-bold">THÔNG TIN DỊCH VỤ</span>
+                            <br />
+                            <span className="font-bold">
+                                Số lượng: {newWedding.service_orders.length}
+                            </span>
+                            <div>
+                                {newWedding.service_orders.map((serviceOrder, index) => (
+                                    <React.Fragment key={serviceOrder.service_id}>
+                                        <br />
+                                        <div className="flex flex-col">
+                                            <span className="font-bold flex flex-row justify-between">
+                                                {index + 1} - Dịch vụ:{" "}
+                                                {getServiceName(
+                                                    serviceList,
+                                                    serviceOrder.service_id,
+                                                )}
+                                                <Button
+                                                    variant="contained"
+                                                    color="warning"
+                                                    className="flex-shrink-0"
+                                                    onClick={() => {
+                                                        handleUpdateServiceOrder("delete", {
+                                                            serviceId: serviceOrder.service_id,
+                                                            note: serviceOrder.note,
+                                                            num: serviceOrder.num,
+                                                            price: serviceOrder.service_price,
+                                                        });
+                                                    }}
+                                                >
+                                                    Xoá
+                                                </Button>
+                                            </span>
+                                            <TextField
+                                                label="Số lượng"
+                                                defaultValue={serviceOrder.num}
+                                                margin="normal"
+                                                onChange={(e) => {
+                                                    handleChangeServiceDetail(
+                                                        serviceOrder.service_id,
+                                                        {
+                                                            note: serviceOrder.note,
+                                                            num: Number(e.target.value),
+                                                            price: serviceOrder.service_price,
+                                                        },
+                                                    );
+                                                }}
+                                            />
+                                            <TextField
+                                                label="Ghi chú"
+                                                multiline
+                                                rows={4}
+                                                defaultValue={serviceOrder.note}
+                                                variant="outlined"
+                                                margin="normal"
+                                                onChange={(e) => {
+                                                    handleChangeServiceDetail(
+                                                        serviceOrder.service_id,
+                                                        {
+                                                            note: e.target.value,
+                                                            num: serviceOrder.num,
+                                                            price: serviceOrder.service_price,
+                                                        },
+                                                    );
+                                                }}
+                                            />
+                                            <TextField
+                                                label="Giá dịch vụ"
+                                                defaultValue={formatPrice(
+                                                    serviceOrder.service_price,
+                                                )}
+                                                margin="normal"
+                                                onChange={(e) => {
+                                                    handleChangeServiceDetail(
+                                                        serviceOrder.service_id,
+                                                        {
+                                                            note: serviceOrder.note,
+                                                            num: serviceOrder.num,
+                                                            price: Number(e.target.value),
+                                                        },
+                                                    );
+                                                }}
+                                            />
+                                        </div>
+                                    </React.Fragment>
+                                ))}
+                                <br />
+                                <Divider />
+                                <br />
+                                <div className="flex flex-row gap-10">
+                                    <FormControl className="w-full">
+                                        <InputLabel id="service_id-label">Dịch vụ</InputLabel>
+                                        <Select
+                                            labelId="service_id-label"
+                                            id="add-service_id"
+                                            label="Dịch vụ"
+                                            onChange={(e) => {
+                                                setCurrentNewService(String(e.target.value));
+                                            }}
+                                        >
+                                            {serviceList.map((service, index) => (
+                                                <MenuItem
+                                                    key={service.service_id}
+                                                    value={service.service_id}
+                                                    selected={index === 0}
+                                                >
+                                                    {service.service_name}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        className="flex-shrink-0"
+                                        onClick={() => {
+                                            if (!currentNewService) {
+                                                return;
+                                            }
+                                            handleUpdateServiceOrder("add", {
+                                                serviceId: currentNewService,
+                                                note: "",
+                                                num: 1,
+                                                price:
+                                                    serviceList.find(
+                                                        (s) => s.service_id === currentNewService,
+                                                    )?.service_price || 0,
+                                            });
+                                        }}
+                                    >
+                                        THÊM DỊCH VỤ
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex gap-7">
+                            <Button
+                                variant="contained"
+                                color="inherit"
+                                onClick={() => {
+                                    setIsCreatingNewWedding(false);
+                                }}
+                            >
+                                HUỶ
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color={
+                                    creatingStatus === "loading"
+                                        ? "secondary"
+                                        : creatingStatus === "success"
+                                        ? "success"
+                                        : creatingStatus === "error"
+                                        ? "error"
+                                        : "primary"
+                                }
+                                onClick={() => {
+                                    handleCreateWedding();
+                                }}
+                            >
+                                TẠO MỚI
                             </Button>
                         </div>
                     </div>

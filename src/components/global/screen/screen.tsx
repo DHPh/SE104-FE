@@ -98,7 +98,7 @@ export default function Screen({ children }: ScreenProps) {
     );
 
     return (
-        <div className="flex h-screen overflow-hidden">
+        <div className="flex h-screen ">
             <div>
                 <div
                     style={{
@@ -112,7 +112,7 @@ export default function Screen({ children }: ScreenProps) {
                     {DrawerList}
                 </div>
             </div>
-            <div className="relative w-full h-screen overflow-hidden px-[48px] py-[35px]">
+            <div className="relative w-full h-screen px-[48px] py-[35px]">
                 <div
                     style={{
                         color: "#000",
