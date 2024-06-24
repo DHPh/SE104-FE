@@ -168,6 +168,7 @@ export interface WeddingState {
     serviceList: ServiceList[];
     foodList: FoodList[];
     weddingDetail?: WeddingDetail | undefined;
+    selectedWeddingIDList: string[];
 }
 
 const initialState: WeddingState = {
@@ -186,6 +187,7 @@ const initialState: WeddingState = {
     serviceList: [],
     foodList: [],
     weddingDetail: undefined,
+    selectedWeddingIDList: [],
 };
 
 const weddingSlice = createSlice({
@@ -238,6 +240,7 @@ const weddingSlice = createSlice({
                     w1.selected = true;
                     state.selectedWedding.data.push(w1);
                     state.selectedWedding.count += 1;
+                    state.selectedWeddingIDList.push(w1.wedding_id);
                 } else {
                     w1.selected = false;
                     const index = state.selectedWedding.data.findIndex(
@@ -246,6 +249,12 @@ const weddingSlice = createSlice({
                     if (index > -1) {
                         state.selectedWedding.data.splice(index, 1);
                         state.selectedWedding.count -= 1;
+                        const index2 = state.selectedWeddingIDList.findIndex(
+                            (id) => id === action.payload.id,
+                        );
+                        if (index2 > -1) {
+                            state.selectedWeddingIDList.splice(index2, 1);
+                        }
                     }
                 }
             }
@@ -268,9 +277,11 @@ const weddingSlice = createSlice({
             if (action.payload) {
                 state.selectedWedding.data = state.weddingList.fullData;
                 state.selectedWedding.count = state.weddingList.count;
+                state.selectedWeddingIDList = state.weddingList.fullData.map((w) => w.wedding_id);
             } else {
                 state.selectedWedding.data = [];
                 state.selectedWedding.count = 0;
+                state.selectedWeddingIDList = [];
             }
         },
         setShiftList: (state, action: PayloadAction<ShiftList[]>) => {
@@ -382,6 +393,20 @@ const weddingSlice = createSlice({
             });
             state.weddingList.count += 1;
         },
+        setDeleteWedding: (state, action: PayloadAction<string>) => {
+            const index = state.weddingList.fullData.findIndex(
+                (w) => w.wedding_id === action.payload,
+            );
+            if (index > -1) {
+                state.weddingList.fullData.splice(index, 1);
+                state.weddingList.tableData.splice(index, 1);
+                state.weddingList.count -= 1;
+
+                // Set count to 0
+                state.selectedWedding.count = 0;
+                state.weddingList.count = state.weddingList.fullData.length;
+            }
+        },
     },
 });
 
@@ -397,5 +422,6 @@ export const {
     setFoodList,
     setUpdateWedding,
     setNewWedding,
+    setDeleteWedding,
 } = weddingSlice.actions;
 export default weddingSlice.reducer;

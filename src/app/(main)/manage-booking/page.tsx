@@ -21,6 +21,8 @@ import GetWeddingList from "@/api/main/get-wedding-list";
 import GetWeddingInfo from "@/api/main/get-wedding-info";
 import PutUpdateWedding from "@/api/main/put-update-wedding";
 import PostCreateWedding from "@/api/main/post-create-wedding";
+import PutConfirmWedding from "@/api/main/put-confirm-wedding";
+import DeleteDeleteWedding from "@/api/main/delete-delete-wedding";
 import {
     Wedding,
     TableWedding,
@@ -67,6 +69,10 @@ export default function Page() {
     const foodList = useSelector((state: RootState) => state.wedding.foodList);
     const serviceList = useSelector((state: RootState) => state.wedding.serviceList);
 
+    const selectedWeddingIDList = useSelector(
+        (state: RootState) => state.wedding.selectedWeddingIDList,
+    );
+
     const [tableRange, setTableRange] = useState<{
         min_table: number;
         max_table: number;
@@ -104,9 +110,9 @@ export default function Page() {
         GetWeddingList({
             dispatch,
             page: 1,
-            limit: 10,
-            startdate: "30/05/2024",
-            enddate: "30/12/2024",
+            limit: 1000,
+            startdate: "01/01/2000",
+            enddate: "30/12/2100",
         });
     }, [roomList, shiftList]);
 
@@ -558,6 +564,40 @@ export default function Page() {
         }
     }
 
+    const handleConfirmWedding = async () => {
+        if (selectedWeddingIDList.length > 0) {
+            try {
+                SetLoadingCursor();
+                await Promise.all(
+                    selectedWeddingIDList.map(async (wedding_id) => {
+                        await PutConfirmWedding(wedding_id);
+                    }),
+                );
+                SetLoadingCursor(false);
+            } catch (error) {
+                console.error(error);
+                SetLoadingCursor(false);
+            }
+        }
+    };
+
+    const handleDeleteWedding = async () => {
+        if (selectedWeddingIDList.length > 0) {
+            try {
+                SetLoadingCursor();
+                await Promise.all(
+                    selectedWeddingIDList.map(async (wedding_id) => {
+                        await DeleteDeleteWedding(dispatch, wedding_id);
+                    }),
+                );
+                SetLoadingCursor(false);
+            } catch (error) {
+                console.error(error);
+                SetLoadingCursor(false);
+            }
+        }
+    };
+
     return (
         <ScreenContent
             buttonAction={() => {
@@ -566,10 +606,23 @@ export default function Page() {
             buttonText="NHẤN NÚT ĐÊ"
         >
             <div className="flex flex-row gap-4">
-                <Button variant="contained" disabled={selectedWeddingCount <= 0}>
+                <Button
+                    variant="contained"
+                    disabled={selectedWeddingCount <= 0}
+                    onClick={() => {
+                        handleConfirmWedding();
+                    }}
+                >
                     XÁC NHẬN
                 </Button>
-                <Button variant="contained" color="warning" disabled={selectedWeddingCount <= 0}>
+                <Button
+                    variant="contained"
+                    color="warning"
+                    disabled={selectedWeddingCount <= 0}
+                    onClick={() => {
+                        handleDeleteWedding();
+                    }}
+                >
                     XOÁ
                 </Button>
             </div>
