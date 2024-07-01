@@ -106,7 +106,7 @@ export default function Page() {
     );
 
     useEffect(() => {
-        if (shiftList.length === 0 || roomList.length === 0) {
+        if (fullShiftList.length === 0 || roomList.length === 0) {
             return;
         }
         GetWeddingList({
@@ -116,7 +116,7 @@ export default function Page() {
             startdate: "01/01/2000",
             enddate: "30/12/2100",
         });
-    }, [roomList, shiftList]);
+    }, [roomList, fullShiftList]);
 
     useEffect(() => {
         if (!weddingDetail) {
