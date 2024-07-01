@@ -112,7 +112,7 @@ export default function Screen({ children }: ScreenProps) {
                     {DrawerList}
                 </div>
             </div>
-            <div className="relative w-full h-screen px-[48px] py-[35px]">
+            <div className="relative w-full h-screen px-[48px] py-[35px] overflow-scroll">
                 <div
                     style={{
                         color: "#000",

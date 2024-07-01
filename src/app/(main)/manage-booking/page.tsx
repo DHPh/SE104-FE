@@ -64,7 +64,9 @@ export default function Page() {
     const selectedWeddingCount = useSelector(
         (state: RootState) => state.wedding.selectedWedding.count,
     );
-    const shiftList = useSelector((state: RootState) => state.wedding.shiftList);
+    const fullShiftList = useSelector((state: RootState) => state.wedding.shiftList);
+    const shiftList = fullShiftList.filter((shift) => shift.activate);
+
     const roomList = useSelector((state: RootState) => state.wedding.roomList);
     const foodList = useSelector((state: RootState) => state.wedding.foodList);
     const serviceList = useSelector((state: RootState) => state.wedding.serviceList);
@@ -110,7 +112,7 @@ export default function Page() {
         GetWeddingList({
             dispatch,
             page: 1,
-            limit: 1000,
+            limit: 1000000000,
             startdate: "01/01/2000",
             enddate: "30/12/2100",
         });
@@ -603,7 +605,7 @@ export default function Page() {
             buttonAction={() => {
                 setIsCreatingNewWedding(true);
             }}
-            buttonText="NHẤN NÚT ĐÊ"
+            buttonText="ĐẶT TIỆC CƯỚI"
         >
             <div className="flex flex-row gap-4">
                 <Button
@@ -639,47 +641,45 @@ export default function Page() {
                 rowCount={countWeddings}
                 numSelected={selectedWeddingCount}
             />
-            <div className="w-full overflow-y-auto" style={{ height: "calc(100% - 220px)" }}>
-                {tableWeddingList.map((row, index) => (
-                    <DefaultTableRow
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={index}
-                        columns={row.data}
-                        selected={row.selected || false}
-                        onSelectClick={() => {
-                            dispatch(toggleWedding({ id: row.id, select: !row.selected }));
-                        }}
-                        onItemClicked={() => {
-                            SetLoadingCursor();
+            {/* <div className="w-full overflow-y-auto" style={{ height: "calc(100% - 220px)" }}> */}
+            {tableWeddingList.map((row, index) => (
+                <DefaultTableRow
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={index}
+                    columns={row.data}
+                    selected={row.selected || false}
+                    onSelectClick={() => {
+                        dispatch(toggleWedding({ id: row.id, select: !row.selected }));
+                    }}
+                    onItemClicked={() => {
+                        SetLoadingCursor();
 
-                            GetWeddingInfo({
-                                dispatch,
-                                wedding_id: row.id,
-                            })
-                                .then(() => {
-                                    const wed = fullWeddingList.find(
-                                        (w) => w.wedding_id === row.id,
-                                    );
-                                    const tb = tableWeddingList.find((w) => w.id === row.id);
-                                    if (!wed || !tb) {
-                                        return;
-                                    }
-                                    setCurrentWedding({
-                                        fullData: wed,
-                                        tableData: tb,
-                                    });
-
-                                    SetLoadingCursor(false);
-                                })
-                                .catch(() => {
-                                    SetLoadingCursor(false); // Set cursor back to normal in case of error
+                        GetWeddingInfo({
+                            dispatch,
+                            wedding_id: row.id,
+                        })
+                            .then(() => {
+                                const wed = fullWeddingList.find((w) => w.wedding_id === row.id);
+                                const tb = tableWeddingList.find((w) => w.id === row.id);
+                                if (!wed || !tb) {
+                                    return;
+                                }
+                                setCurrentWedding({
+                                    fullData: wed,
+                                    tableData: tb,
                                 });
-                        }}
-                    />
-                ))}
-            </div>
+
+                                SetLoadingCursor(false);
+                            })
+                            .catch(() => {
+                                SetLoadingCursor(false); // Set cursor back to normal in case of error
+                            });
+                    }}
+                />
+            ))}
+            {/* </div> */}
             {currentWedding && weddingDetail && (
-                <div className="absolute top-0 left-0 w-full h-full backdrop-blur-sm">
+                <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm">
                     <div
                         style={{
                             position: "absolute",
@@ -814,18 +814,6 @@ export default function Page() {
                                     </Select>
                                 </FormControl>
                                 <TextField
-                                    label="Tình trạng (%)"
-                                    id="payment_status"
-                                    type="number"
-                                    defaultValue={weddingDetail.invoice.payment_status}
-                                    onChange={(e) => {
-                                        handleWeddingInfoChange(
-                                            "payment_status",
-                                            Number(e.target.value),
-                                        );
-                                    }}
-                                />
-                                <TextField
                                     label="Ghi chú"
                                     id="note"
                                     defaultValue={weddingDetail.wedding_info.note}
@@ -924,6 +912,15 @@ export default function Page() {
                                     label="Ngày thanh toán"
                                     id="invoice_date"
                                     defaultValue={weddingDetail.invoice.invoice_date}
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                                <TextField
+                                    label="Tình trạng (%)"
+                                    id="payment_status"
+                                    type="number"
+                                    defaultValue={weddingDetail.invoice.payment_status}
                                     InputProps={{
                                         readOnly: true,
                                     }}
@@ -1222,7 +1219,7 @@ export default function Page() {
                 </div>
             )}
             {isCreatingNewWedding && newWedding && (
-                <div className="absolute top-0 left-0 w-full h-full backdrop-blur-sm">
+                <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm">
                     <div
                         style={{
                             position: "absolute",
@@ -1645,7 +1642,7 @@ export default function Page() {
                                     setIsCreatingNewWedding(false);
                                 }}
                             >
-                                HUỶ
+                                THOÁT
                             </Button>
                             <Button
                                 variant="contained"

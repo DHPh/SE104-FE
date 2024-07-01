@@ -407,6 +407,29 @@ const weddingSlice = createSlice({
                 state.weddingList.count = state.weddingList.fullData.length;
             }
         },
+        setUpdateShift: (state, action: PayloadAction<ShiftList>) => {
+            const shift = state.shiftList.find((s) => s.shift_name === action.payload.shift_name);
+            if (shift) {
+                shift.activate = action.payload.activate;
+            }
+        },
+        setAddRoomType: (state, action: PayloadAction<RoomTypeList>) => {
+            state.roomTypeList.push(action.payload);
+        },
+        setUpdateRoomType: (state, action: PayloadAction<RoomTypeList>) => {
+            const roomType = state.roomTypeList.find((rt) => rt.rt_id === action.payload.rt_id);
+            if (roomType) {
+                roomType.rt_name = action.payload.rt_name;
+                roomType.rt_price = action.payload.rt_price;
+                roomType.updated_at = new Date().toISOString();
+            }
+        },
+        setDeleteRoomType: (state, action: PayloadAction<string>) => {
+            const index = state.roomTypeList.findIndex((rt) => rt.rt_id === action.payload);
+            if (index > -1) {
+                state.roomTypeList.splice(index, 1);
+            }
+        },
     },
 });
 
@@ -423,5 +446,9 @@ export const {
     setUpdateWedding,
     setNewWedding,
     setDeleteWedding,
+    setUpdateShift,
+    setAddRoomType,
+    setUpdateRoomType,
+    setDeleteRoomType,
 } = weddingSlice.actions;
 export default weddingSlice.reducer;

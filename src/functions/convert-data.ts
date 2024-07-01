@@ -42,6 +42,10 @@ export function handleVNDInput(inputValue: string) {
     return extractedPrice;
 }
 
+export function getPriceNumber(price: string) {
+    return Number(price.replace(/\D/g, ""));
+}
+
 export const formatDateFromISOString = (date: string) => {
     const dateObj = new Date(date);
     const day = dateObj.getDate();

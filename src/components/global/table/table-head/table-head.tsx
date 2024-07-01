@@ -2,13 +2,14 @@ import Checkbox from "@mui/material/Checkbox";
 
 interface DefaultTableHeadProps {
     columns: {
-        id: string;
-        label: string;
+        id?: string;
+        label: string | number | JSX.Element | JSX.Element[] | null | undefined;
         align?: "right";
     }[];
     onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
     numSelected: number;
     rowCount: number;
+    useCheckbox?: boolean;
 }
 
 export default function DefaultTableHead({
@@ -16,10 +17,11 @@ export default function DefaultTableHead({
     onSelectAllClick,
     numSelected,
     rowCount,
+    useCheckbox = true,
 }: DefaultTableHeadProps) {
     return (
         <div
-            className="h-[100px] min-w-max w-full pr-6"
+            className="h-[100px] min-w-max w-full px-6"
             style={{
                 borderTop: "1px solid var(--foreground-low, #98A2B3)",
                 borderBottom: "1px solid var(--foreground-low, #98A2B3)",
@@ -29,12 +31,16 @@ export default function DefaultTableHead({
             }}
         >
             <div
-                style={{
-                    height: "100%",
-                    aspectRatio: 1,
-                    display: "grid",
-                    placeItems: "center",
-                }}
+                style={
+                    useCheckbox
+                        ? {
+                              height: "100%",
+                              aspectRatio: 1,
+                              display: "grid",
+                              placeItems: "center",
+                          }
+                        : { display: "none" }
+                }
             >
                 <Checkbox
                     indeterminate={numSelected > 0 && numSelected < rowCount}

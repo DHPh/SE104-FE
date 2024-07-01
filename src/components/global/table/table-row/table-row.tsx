@@ -4,12 +4,13 @@ import Checkbox from "@mui/material/Checkbox";
 
 interface DefaultTableRowProps {
     columns: {
-        id: string;
-        value: string;
+        id?: string;
+        value: string | number | JSX.Element | JSX.Element[] | null | undefined;
     }[];
     selected: boolean;
     onSelectClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onItemClicked: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    useCheckbox?: boolean;
 }
 
 export default function DefaultTableRow({
@@ -17,10 +18,11 @@ export default function DefaultTableRow({
     selected,
     onSelectClick,
     onItemClicked,
+    useCheckbox = true,
 }: DefaultTableRowProps) {
     return (
         <div
-            className="h-[100px] min-w-max w-full hover:bg-slate-100 cursor-pointer pr-6"
+            className="h-[100px] min-w-max w-full hover:bg-slate-100 cursor-pointer px-6"
             style={{
                 position: "relative",
                 borderBottom: "1px solid var(--foreground-low, #98A2B3)",
@@ -44,12 +46,16 @@ export default function DefaultTableRow({
                 }}
             />
             <div
-                style={{
-                    height: "100%",
-                    aspectRatio: 1,
-                    display: "grid",
-                    placeItems: "center",
-                }}
+                style={
+                    useCheckbox
+                        ? {
+                              height: "100%",
+                              aspectRatio: 1,
+                              display: "grid",
+                              placeItems: "center",
+                          }
+                        : { display: "none" }
+                }
             >
                 <Checkbox
                     checked={selected}
