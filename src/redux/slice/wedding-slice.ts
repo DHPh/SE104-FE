@@ -462,6 +462,20 @@ const weddingSlice = createSlice({
                 food.updated_at = new Date().toISOString();
             }
         },
+        setAddService: (state, action: PayloadAction<ServiceList>) => {
+            state.serviceList.push(action.payload);
+        },
+        setUpdateService: (state, action: PayloadAction<ServiceList>) => {
+            const service = state.serviceList.find(
+                (s) => s.service_id === action.payload.service_id,
+            );
+            if (service) {
+                service.service_name = action.payload.service_name;
+                service.service_price = action.payload.service_price;
+                service.note = action.payload.note;
+                service.updated_at = new Date().toISOString();
+            }
+        },
     },
 });
 
@@ -487,5 +501,7 @@ export const {
     setDeleteRoom,
     setAddFood,
     setUpdateFood,
+    setAddService,
+    setUpdateService,
 } = weddingSlice.actions;
 export default weddingSlice.reducer;
