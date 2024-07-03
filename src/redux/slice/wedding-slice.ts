@@ -430,6 +430,26 @@ const weddingSlice = createSlice({
                 state.roomTypeList.splice(index, 1);
             }
         },
+        setAddRoom: (state, action: PayloadAction<RoomList>) => {
+            state.roomList.push(action.payload);
+        },
+        setUpdateRoom: (state, action: PayloadAction<RoomList>) => {
+            const room = state.roomList.find((r) => r.room_id === action.payload.room_id);
+            if (room) {
+                room.room_name = action.payload.room_name;
+                room.room_type = action.payload.room_type;
+                room.max_table = action.payload.max_table;
+                room.min_table = action.payload.min_table;
+                room.note = action.payload.note;
+                room.updated_at = new Date().toISOString();
+            }
+        },
+        setDeleteRoom: (state, action: PayloadAction<string>) => {
+            const index = state.roomList.findIndex((r) => r.room_id === action.payload);
+            if (index > -1) {
+                state.roomList.splice(index, 1);
+            }
+        },
     },
 });
 
@@ -450,5 +470,8 @@ export const {
     setAddRoomType,
     setUpdateRoomType,
     setDeleteRoomType,
+    setAddRoom,
+    setUpdateRoom,
+    setDeleteRoom,
 } = weddingSlice.actions;
 export default weddingSlice.reducer;

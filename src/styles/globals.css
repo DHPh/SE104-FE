@@ -65,3 +65,22 @@ body {
     width: 6px;
     height: 6px;
 }
+
+/* Add this CSS to your stylesheet */
+.image-container {
+    overflow: hidden; /* Ensures the image does not overflow its container */
+    width: 100%; /* Adjust based on your needs */
+    height: 100%; /* Adjust based on your needs */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); /* Adds a subtle shadow to the image */
+}
+
+.image-container img {
+    transition: transform 0.5s ease; /* Smooth transition for zoom effect */
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Keeps the image aspect ratio */
+}
+
+.image-container:hover img {
+    transform: scale(1.5); /* Adjust scale value based on desired zoom level */
+}
