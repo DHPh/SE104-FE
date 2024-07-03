@@ -450,6 +450,18 @@ const weddingSlice = createSlice({
                 state.roomList.splice(index, 1);
             }
         },
+        setAddFood: (state, action: PayloadAction<FoodList>) => {
+            state.foodList.push(action.payload);
+        },
+        setUpdateFood: (state, action: PayloadAction<FoodList>) => {
+            const food = state.foodList.find((f) => f.food_id === action.payload.food_id);
+            if (food) {
+                food.food_name = action.payload.food_name;
+                food.food_price = action.payload.food_price;
+                food.note = action.payload.note;
+                food.updated_at = new Date().toISOString();
+            }
+        },
     },
 });
 
@@ -473,5 +485,7 @@ export const {
     setAddRoom,
     setUpdateRoom,
     setDeleteRoom,
+    setAddFood,
+    setUpdateFood,
 } = weddingSlice.actions;
 export default weddingSlice.reducer;

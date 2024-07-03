@@ -270,9 +270,7 @@ export default function Page() {
                                         setShowImage(true);
                                     }}
                                 >
-                                    {currentRoomImage === undefined
-                                        ? "Tải hình ảnh sảnh"
-                                        : "Xem hình ảnh sảnh"}
+                                    Xem hình ảnh sảnh
                                 </button>
                             )}
                         </div>
