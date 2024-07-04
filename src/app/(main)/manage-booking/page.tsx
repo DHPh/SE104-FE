@@ -23,6 +23,8 @@ import PutUpdateWedding from "@/api/main/put-update-wedding";
 import PostCreateWedding from "@/api/main/post-create-wedding";
 import PutConfirmWedding from "@/api/main/put-confirm-wedding";
 import DeleteDeleteWedding from "@/api/main/delete-delete-wedding";
+import GetWeddingInvoice from "@/api/main/get-wedding-invoice";
+import PutPaymentInvoice from "@/api/main/put-payment-invoice";
 import {
     Wedding,
     TableWedding,
@@ -40,6 +42,7 @@ import {
     convertWeddingDetail,
 } from "@/functions/convert-data";
 import SetLoadingCursor from "@/functions/loading-cursor";
+import calculateLateFee from "@/functions/calculate-late-fee";
 
 export default function Page() {
     const dispatch = useDispatch();
@@ -50,6 +53,32 @@ export default function Page() {
           }
         | undefined
     >(undefined);
+    const [currentWeddingInvoice, setCurrentWeddingInvoice] = useState<
+        | {
+              total: number;
+              payment_status: number;
+              invoice_date: string;
+              invoice_tax: number;
+              payment_at: string;
+              note: string | null;
+          }
+        | undefined
+    >(undefined);
+
+    const [updatedWeddingInvoice, setUpdatedWeddingInvoice] = useState<
+        | {
+              wedding_id: string;
+              payment_status: number;
+              payment_at: string;
+              late_fee: number;
+          }
+        | undefined
+    >({
+        wedding_id: "",
+        payment_status: 0,
+        payment_at: "",
+        late_fee: 0,
+    });
 
     const [updatedWedding, setUpdatedWedding] = useState<UpdatedWedding | undefined>(undefined);
     const [updateStatus, setUpdateStatus] = useState<"idle" | "loading" | "success" | "error">(
@@ -182,6 +211,18 @@ export default function Page() {
             label: "Ngày cưới",
         },
     ];
+
+    const handleInvoiceChange = (field: string, value: string | number) => {
+        setUpdatedWeddingInvoice((prevState) => {
+            if (prevState) {
+                return {
+                    ...prevState,
+                    [field]: value,
+                };
+            }
+            return prevState;
+        });
+    };
 
     const handleWeddingInfoChange = (
         field: keyof UpdatedWedding,
@@ -654,6 +695,11 @@ export default function Page() {
                     onItemClicked={() => {
                         SetLoadingCursor();
 
+                        GetWeddingInvoice(row.id).then((data) => {
+                            setCurrentWeddingInvoice(data);
+                            console.log(data);
+                        });
+
                         GetWeddingInfo({
                             dispatch,
                             wedding_id: row.id,
@@ -893,34 +939,11 @@ export default function Page() {
                                     InputProps={{
                                         readOnly: true,
                                     }}
-                                    // onChange={(e) => {
-                                    //     setUpdatedWedding((prevState) => {
-                                    //         if (prevState) {
-                                    //             return {
-                                    //                 ...prevState,
-                                    //                 invoice: {
-                                    //                     ...prevState.invoice,
-                                    //                     invoice_tax: Number(e.target.value),
-                                    //                 },
-                                    //             };
-                                    //         }
-                                    //         return prevState;
-                                    //     });
-                                    // }}
                                 />
                                 <TextField
                                     label="Ngày thanh toán"
                                     id="invoice_date"
                                     defaultValue={weddingDetail.invoice.invoice_date}
-                                    InputProps={{
-                                        readOnly: true,
-                                    }}
-                                />
-                                <TextField
-                                    label="Tình trạng (%)"
-                                    id="payment_status"
-                                    type="number"
-                                    defaultValue={weddingDetail.invoice.payment_status}
                                     InputProps={{
                                         readOnly: true,
                                     }}
@@ -933,6 +956,84 @@ export default function Page() {
                                         readOnly: true,
                                     }}
                                 />
+                            </div>
+                            <br />
+                            <span className="font-bold">TRẠNG THÁI THANH TOÁN</span>
+                            <div className="grid grid-cols-3 gap-4 pt-4">
+                                <TextField
+                                    label="Tình trạng thanh toán (%)"
+                                    type="number"
+                                    defaultValue={currentWeddingInvoice?.payment_status}
+                                    // eslint-disable-next-line react/jsx-no-bind
+                                    onChange={function (e) {
+                                        // Check if value is between 0 and 100
+                                        if (Number(e.target.value) < 0) {
+                                            e.target.value = "0";
+                                            return;
+                                        }
+                                        if (Number(e.target.value) > 100) {
+                                            e.target.value = "100";
+                                            return;
+                                        }
+                                        handleInvoiceChange(
+                                            "payment_status",
+                                            Number(e.target.value),
+                                        );
+                                    }}
+                                    InputProps={{
+                                        inputProps: {
+                                            min: 0,
+                                            max: 100,
+                                        },
+                                    }}
+                                />
+                                <TextField
+                                    label="Phí chậm trễ"
+                                    defaultValue={formatPrice(
+                                        calculateLateFee(
+                                            currentWeddingInvoice?.invoice_date || "",
+                                            currentWeddingInvoice?.payment_at ||
+                                                new Date().toISOString(),
+                                            currentWeddingInvoice?.total || 0,
+                                        ),
+                                    )}
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                                <Button
+                                    variant="contained"
+                                    color="warning"
+                                    onClick={() => {
+                                        if (updatedWeddingInvoice) {
+                                            const date = new Date();
+                                            const day = date.getDate().toString().padStart(2, "0");
+                                            const month = (date.getMonth() + 1)
+                                                .toString()
+                                                .padStart(2, "0"); // getMonth() is zero-based
+                                            const year = date.getFullYear().toString();
+
+                                            const formattedDate = `${day}/${month}/${year}`;
+
+                                            PutPaymentInvoice(
+                                                currentWedding.fullData.wedding_id,
+                                                updatedWeddingInvoice.payment_status,
+                                                formattedDate,
+                                                Number(
+                                                    calculateLateFee(
+                                                        currentWeddingInvoice?.invoice_date || "",
+                                                        new Date().toISOString(),
+                                                        currentWeddingInvoice?.total || 0,
+                                                    ),
+                                                ),
+                                            );
+                                        } else {
+                                            console.error("Invalid updatedWeddingInvoice");
+                                        }
+                                    }}
+                                >
+                                    XÁC NHẬN THANH TOÁN
+                                </Button>
                             </div>
                             <br />
                             <Divider />
@@ -1362,19 +1463,6 @@ export default function Page() {
                                         )}
                                     </Select>
                                 </FormControl>
-                                <TextField
-                                    label="Tình trạng (%)"
-                                    id="payment_status"
-                                    type="number"
-                                    defaultValue={newWedding.payment_status}
-                                    onChange={(e) => {
-                                        handleWeddingInfoChange(
-                                            "payment_status",
-                                            e.target.value,
-                                            true,
-                                        );
-                                    }}
-                                />
                                 <TextField
                                     label="Ghi chú"
                                     id="note"
