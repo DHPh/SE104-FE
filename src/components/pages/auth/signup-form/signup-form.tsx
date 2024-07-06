@@ -8,7 +8,11 @@ import { TextField } from "@mui/material";
 import signupSuccess from "@/redux/slice/auth-slice";
 import { PostSignup } from "@/api/auth/post-login";
 import customCss from "./signup.module.css";
-import { DesktopDateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import {
+    DesktopDatePicker,
+    DesktopDateTimePicker,
+    LocalizationProvider,
+} from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { User } from "@/redux/slice/wedding-slice";
 
@@ -129,9 +133,8 @@ export default function SignupForm() {
                         autoComplete="tel-national username"
                     />
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DesktopDateTimePicker
+                        <DesktopDatePicker
                             label="Ngày sinh"
-                            ampm={false}
                             format="DD/MM/YYYY"
                             onChange={(date) => {
                                 if (!date) {
