@@ -80,7 +80,7 @@ export default function Page() {
     return (
         <ScreenContent
             buttonAction={() => {
-                console.log("Button clicked");
+                setIsCreating(true);
             }}
             buttonText="THÊM DỊCH VỤ"
         >
@@ -135,11 +135,11 @@ export default function Page() {
                             // overflowY: "auto",
                         }}
                     >
-                        <span className="text-xl font-bold pb-2">CẬP NHẬT MÓN ĂN</span>
+                        <span className="text-xl font-bold pb-2">CẬP NHẬT DỊCH VỤ</span>
                         <div className="w-full">
                             <div className="w-full grid grid-cols-2 gap-4">
                                 <TextField
-                                    label="Tên món ăn"
+                                    label="Tên dịch vụ"
                                     variant="outlined"
                                     value={currentService.service_name}
                                     onChange={(e) => {
@@ -194,7 +194,7 @@ export default function Page() {
                                 <div className="pt-4">
                                     {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                                     <label className="text-blue-500 hover:underline cursor-pointer">
-                                        Tải hình ảnh món ăn
+                                        Tải hình ảnh dịch vụ
                                         <input
                                             type="file"
                                             accept="image/png, image/jpeg, image/jpg"
@@ -216,7 +216,7 @@ export default function Page() {
                                         setShowImage(true);
                                     }}
                                 >
-                                    Xem hình ảnh món ăn
+                                    Xem hình ảnh dịch vụ
                                 </button>
                             )}
                         </div>
@@ -319,11 +319,11 @@ export default function Page() {
                             // overflowY: "auto",
                         }}
                     >
-                        <span className="text-xl font-bold pb-2">TẠO SẢNH MỚI</span>
+                        <span className="text-xl font-bold pb-2">THÊM DỊCH VỤ MỚI</span>
                         <div className="w-full">
                             <div className="w-full grid grid-cols-2 gap-4">
                                 <TextField
-                                    label="Tên món ăn"
+                                    label="Tên dịch vụ"
                                     variant="outlined"
                                     value={newService.service_name}
                                     onChange={(e) => {

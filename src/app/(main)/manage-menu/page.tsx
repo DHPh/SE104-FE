@@ -319,7 +319,7 @@ export default function Page() {
                             // overflowY: "auto",
                         }}
                     >
-                        <span className="text-xl font-bold pb-2">TẠO SẢNH MỚI</span>
+                        <span className="text-xl font-bold pb-2">THÊM MÓN ĂN MỚI</span>
                         <div className="w-full">
                             <div className="w-full grid grid-cols-2 gap-4">
                                 <TextField
