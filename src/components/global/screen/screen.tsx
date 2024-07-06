@@ -19,6 +19,7 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import DiningIcon from "@mui/icons-material/Dining";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
 
 interface ScreenProps {
     children: React.ReactNode;
@@ -98,6 +99,26 @@ export default function Screen({ children }: ScreenProps) {
                     </ListItem>
                 ))}
             </List>
+            <List disablePadding>
+                <ListItem disablePadding>
+                    <ListItemButton
+                        onClick={() => {
+                            setCurrentPage("/account");
+                            router.push("/account");
+                        }}
+                        className={`${currentPage === "/account" && "!text-[#1570EF]"}`}
+                    >
+                        <ListItemIcon
+                            style={{
+                                color: currentPage === "/account" ? "#1570EF" : "inherit",
+                            }}
+                        >
+                            <SettingsApplicationsIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="QUẢN LÍ TÀI KHOẢN" />
+                    </ListItemButton>
+                </ListItem>
+            </List>
         </Box>
     );
 
@@ -127,7 +148,7 @@ export default function Screen({ children }: ScreenProps) {
                         marginBottom: "50px",
                     }}
                 >
-                    {pages[urls.indexOf(currentPage)]}
+                    {pages[urls.indexOf(currentPage)] || "QUẢN LÍ TÀI KHOẢN"}
                 </div>
                 {children}
             </div>
@@ -139,16 +160,17 @@ interface ScreenContentProps {
     children: React.ReactNode;
     buttonAction?: () => void;
     buttonText?: string;
+    color?: "inherit" | "primary" | "secondary" | "success" | "error" | "info" | "warning";
 }
 
-export function ScreenContent({ children, buttonAction, buttonText }: ScreenContentProps) {
+export function ScreenContent({ children, buttonAction, buttonText, color }: ScreenContentProps) {
     return (
         <>
             <Button
                 style={{ position: "absolute", right: 48, top: 25 }}
                 size="large"
                 variant="contained"
-                color="primary"
+                color={color || "primary"}
                 onClick={buttonAction}
             >
                 {buttonText || "Button"}
