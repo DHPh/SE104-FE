@@ -16,7 +16,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             const res = await fetchAPI("/user/profile");
             if (res.status === 200) {
                 const data = await res.json();
-                dispatch(loginSuccess({ email: data.email, role: data.role }));
+                dispatch(loginSuccess({ email: data.data.email, role: data.data.role }));
                 if (pages.includes(window.location.pathname)) {
                     window.location.replace("/");
                 } else {

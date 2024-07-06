@@ -15,11 +15,13 @@ import { convertDateToServerFormat } from "@/functions/convert-data";
 import PostUpdateUser from "@/api/main/post-update-user";
 import DeleteDeleteUser from "@/api/main/delete-delete-user";
 import PostCreateUser from "@/api/main/post-create-user";
+import PutResetPassword from "@/api/main/put-reset-password";
 
 export default function Page() {
     const dispatch = useDispatch();
 
     const userList = useSelector((state: RootState) => state.wedding.userList);
+    const currentRole = useSelector((state: RootState) => state.auth.user?.role);
 
     const [currentUser, setCurrentUser] = useState<User | null>(null);
 
@@ -99,7 +101,7 @@ export default function Page() {
                             background: "#FFF",
                             boxShadow: "0px 0px 20px 0px rgba(0, 0, 0, 0.25)",
                             width: "600px",
-                            height: "450px",
+                            height: currentRole === "admin" ? "520px" : "450px",
                             padding: "20px 40px",
                             display: "flex",
                             flexDirection: "column",
@@ -209,6 +211,31 @@ export default function Page() {
                                 disabled
                             />
                         </div>
+                        {currentRole === "admin" && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <TextField
+                                    label="Mật khẩu"
+                                    variant="outlined"
+                                    defaultValue=""
+                                    onChange={(e) => {
+                                        setNewUserPassword(e.target.value);
+                                    }}
+                                />
+                                <Button
+                                    variant="contained"
+                                    color="warning"
+                                    onClick={() => {
+                                        PutResetPassword(currentUser.email, newUserPassword).then(
+                                            () => {
+                                                setCurrentUser(null);
+                                            },
+                                        );
+                                    }}
+                                >
+                                    ĐẶT LẠI MẬT KHẨU
+                                </Button>
+                            </div>
+                        )}
                         <div className="grid grid-cols-2 gap-4">
                             <Button
                                 variant="contained"
