@@ -84,9 +84,9 @@ export default function LoginForm() {
                     >
                         Email hoặc mật khẩu không đúng!
                     </small>
-                    <small className="flex text-black w-full mb-[24px] hover:underline">
+                    {/* <small className="flex text-black w-full mb-[24px] hover:underline">
                         <Link href="/reset-password">Quên mật khẩu?</Link>
-                    </small>
+                    </small> */}
 
                     <Button
                         variant="contained"
@@ -102,7 +102,7 @@ export default function LoginForm() {
 
                     <div className="flex text-gray-500 w-full justify-center mt-[20px] text-[16px]">
                         Chưa có tài khoản?&nbsp;
-                        <Link href="/register" className="text-blue-500 hover:underline">
+                        <Link href="/signup" className="text-blue-500 hover:underline">
                             Đăng ký
                         </Link>
                     </div>
