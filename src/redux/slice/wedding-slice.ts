@@ -2,6 +2,17 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { convertDateToServerFormat } from "@/functions/convert-data";
 
+export interface User {
+    email: string;
+    role: string;
+    full_name: string;
+    phone_number: string;
+    birthday: string;
+    id: string;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface Wedding {
     wedding_id: string;
     groom_name: string;
@@ -169,6 +180,7 @@ export interface WeddingState {
     foodList: FoodList[];
     weddingDetail?: WeddingDetail | undefined;
     selectedWeddingIDList: string[];
+    userList: User[];
 }
 
 const initialState: WeddingState = {
@@ -188,6 +200,7 @@ const initialState: WeddingState = {
     foodList: [],
     weddingDetail: undefined,
     selectedWeddingIDList: [],
+    userList: [],
 };
 
 const weddingSlice = createSlice({
@@ -476,6 +489,36 @@ const weddingSlice = createSlice({
                 service.updated_at = new Date().toISOString();
             }
         },
+        setUserList: (state, action: PayloadAction<User[]>) => {
+            state.userList = action.payload;
+        },
+        setAddUser: (state, action: PayloadAction<User>) => {
+            state.userList.push(action.payload);
+        },
+        setUpdateUser: (
+            state,
+            action: PayloadAction<{
+                email: string;
+                full_name: string;
+                phone_number: string;
+                birthday: string;
+                id: string;
+            }>,
+        ) => {
+            const user = state.userList.find((u) => u.id === action.payload.id);
+            if (user) {
+                user.email = action.payload.email;
+                user.full_name = action.payload.full_name;
+                user.phone_number = action.payload.phone_number;
+                user.birthday = action.payload.birthday;
+            }
+        },
+        setDeleteUser: (state, action: PayloadAction<string>) => {
+            const index = state.userList.findIndex((u) => u.email === action.payload);
+            if (index > -1) {
+                state.userList.splice(index, 1);
+            }
+        },
     },
 });
 
@@ -503,5 +546,9 @@ export const {
     setUpdateFood,
     setAddService,
     setUpdateService,
+    setUserList,
+    setAddUser,
+    setUpdateUser,
+    setDeleteUser,
 } = weddingSlice.actions;
 export default weddingSlice.reducer;

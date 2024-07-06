@@ -18,6 +18,7 @@ import AllInboxIcon from "@mui/icons-material/AllInbox";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import DiningIcon from "@mui/icons-material/Dining";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 
 interface ScreenProps {
     children: React.ReactNode;
@@ -35,6 +36,7 @@ export default function Screen({ children }: ScreenProps) {
         "QUẢN LÍ THỰC ĐƠN",
         "THÔNG TIN SẢNH",
         "BÁO CÁO DOANH SỐ",
+        "QUẢN LÍ NGƯỜI DÙNG",
     ];
     const urls = [
         "/manage-booking",
@@ -43,6 +45,7 @@ export default function Screen({ children }: ScreenProps) {
         "/manage-menu",
         "/hall-info",
         "/revenue-report",
+        "/manage-user",
     ];
     const icons = [
         <DateRangeIcon />,
@@ -51,6 +54,7 @@ export default function Screen({ children }: ScreenProps) {
         <DiningIcon />,
         <AllInboxIcon />,
         <AttachMoneyIcon />,
+        <ManageAccountsIcon />,
     ];
 
     const DrawerList = (
