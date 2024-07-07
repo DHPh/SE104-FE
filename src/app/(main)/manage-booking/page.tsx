@@ -44,7 +44,7 @@ import {
     convertDateToServerFormat,
 } from "@/functions/convert-data";
 import SetLoadingCursor from "@/functions/loading-cursor";
-import { setError } from "@/redux/slice/error-slice";
+import { setError, setSuccess } from "@/redux/slice/error-slice";
 
 export default function Page() {
     const dispatch = useDispatch();
@@ -1118,7 +1118,15 @@ export default function Page() {
                                                         updatedWeddingInvoice.payment_status,
                                                         formattedDate,
                                                         lateFee,
-                                                    );
+                                                    )
+                                                        .then(() => {
+                                                            dispatch(
+                                                                setSuccess("Thanh toán thành công"),
+                                                            );
+                                                        })
+                                                        .catch((error) => {
+                                                            dispatch(setError(error));
+                                                        });
                                                 } else {
                                                     console.error("Invalid updatedWeddingInvoice");
                                                 }
@@ -1598,8 +1606,9 @@ export default function Page() {
                                 Tiền đặt cọc:{" "}
                                 {weddingDetail.invoice.payment_status !== 100
                                     ? formatPrice(
-                                          weddingDetail.invoice.total *
-                                              weddingDetail.invoice.payment_status,
+                                          (weddingDetail.invoice.total *
+                                              weddingDetail.invoice.payment_status) /
+                                              100,
                                       )
                                     : "Đã thanh toán"}
                             </span>

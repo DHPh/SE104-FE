@@ -28,7 +28,8 @@ export default async function PutPaymentInvoice(
                 const data = await res.json();
                 resolve(data.data);
             } else {
-                reject(res);
+                const data = await res.json();
+                reject(data.message_vi);
             }
         } catch (error) {
             reject(error);

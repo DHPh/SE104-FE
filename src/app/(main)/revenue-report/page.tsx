@@ -7,7 +7,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers-pro/AdapterDayjs";
 import { DateRangePicker } from "@mui/x-date-pickers-pro/DateRangePicker";
 import { Button } from "@mui/material";
 import { DateRange } from "@mui/x-date-pickers-pro"; // Import Dayjs type
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { ScreenContent } from "@/components/global/screen/screen";
 import DefaultTableHead from "@/components/global/table/table-head/table-head";
 import DefaultTableRow from "@/components/global/table/table-row/table-row";
@@ -60,6 +60,7 @@ export default function Page() {
                             localeText={{ start: "Ngày bắt đầu", end: "Ngày kết thúc" }}
                             value={dateRange} // Pass the dateRange state
                             onChange={setDateRange} // Pass the setDateRange function
+                            maxDate={dayjs(new Date())}
                         />
                     </DemoContainer>
                 </LocalizationProvider>
@@ -78,7 +79,8 @@ export default function Page() {
             <br />
             <span className="text-2xl text-gray-500 mt-2">
                 Báo cáo doanh thu theo ngày từ ngày {dateRange[0]?.format("DD/MM/YYYY")} đến ngày{" "}
-                {dateRange[1]?.format("DD/MM/YYYY")}
+                {dateRange[1]?.format("DD/MM/YYYY")}. Tổng doanh thu:{" "}
+                {formatPrice(data.reduce((acc, cur) => acc + (cur.revenue || 0), 0))}
             </span>
             <br />
             <br />
