@@ -42,6 +42,7 @@ import {
     convertWeddingDetail,
 } from "@/functions/convert-data";
 import SetLoadingCursor from "@/functions/loading-cursor";
+import { setError } from "@/redux/slice/error-slice";
 
 export default function Page() {
     const dispatch = useDispatch();
@@ -243,8 +244,6 @@ export default function Page() {
             });
             return;
         }
-
-        console.log(value, typeof value);
 
         setUpdatedWedding((prevState) => {
             if (prevState) {
@@ -553,6 +552,23 @@ export default function Page() {
 
     async function handleUpdateWedding() {
         if (updatedWedding && currentWedding) {
+            const date = new Date(updatedWedding.wedding_date);
+            // Get today's date with the time cleared
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Create a new date object for the day after tomorrow
+            const dayAfterTomorrow = new Date(today);
+            dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+
+            // Check if the wedding date is before the day after tomorrow
+            if (date < dayAfterTomorrow) {
+                console.log("Invalid date");
+                dispatch(setError("Ngày cưới phải sau ngày hôm nay và ngày mai"));
+                // If the date is today, tomorrow, or in the past, return early
+                return;
+            }
+
             try {
                 setUpdateStatus("loading");
                 const res = await PutUpdateWedding({
@@ -588,6 +604,22 @@ export default function Page() {
 
     async function handleCreateWedding() {
         if (newWedding) {
+            const date = new Date(newWedding.wedding_date);
+            // Get today's date with the time cleared
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Create a new date object for the day after tomorrow
+            const dayAfterTomorrow = new Date(today);
+            dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+
+            // Check if the wedding date is before the day after tomorrow
+            if (date < dayAfterTomorrow) {
+                dispatch(setError("Ngày cưới phải sau ngày hôm nay và ngày mai"));
+                // If the date is today, tomorrow, or in the past, return early
+                return;
+            }
+
             try {
                 setCreatingStatus("loading");
                 const res = await PostCreateWedding({
@@ -796,6 +828,7 @@ export default function Page() {
                                                 console.error("Invalid date");
                                                 return;
                                             }
+
                                             handleWeddingInfoChange(
                                                 "wedding_date",
                                                 date.toISOString(),

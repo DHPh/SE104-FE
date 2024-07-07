@@ -8,6 +8,7 @@ export interface ErrorState {
     checkpoint: boolean;
     successMessage: string | null;
     showSuccess: boolean;
+    successCheckpoint: boolean;
 }
 
 const initialState: ErrorState = {
@@ -16,6 +17,7 @@ const initialState: ErrorState = {
     checkpoint: false,
     successMessage: null,
     showSuccess: false,
+    successCheckpoint: false,
 };
 
 const errorSlice = createSlice({
@@ -26,6 +28,7 @@ const errorSlice = createSlice({
             state.errorMessages = action.payload;
             state.showError = true;
             state.checkpoint = !state.checkpoint;
+            state.successMessage = null;
         },
         clearError(state) {
             state.errorMessages = null;
@@ -34,7 +37,8 @@ const errorSlice = createSlice({
         setSuccess(state, action: PayloadAction<string>) {
             state.successMessage = action.payload;
             state.showSuccess = true;
-            state.checkpoint = !state.checkpoint;
+            state.successCheckpoint = !state.successCheckpoint;
+            state.errorMessages = null;
         },
         clearSuccess(state) {
             state.successMessage = null;

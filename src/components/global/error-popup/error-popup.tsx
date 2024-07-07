@@ -4,7 +4,7 @@
 import { useLayoutEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store/store";
-import { clearError } from "@/redux/slice/error-slice";
+import { clearError, clearSuccess } from "@/redux/slice/error-slice";
 // import { XIcon } from "@/components/svg/svg";
 // import error from "./error.module.css";
 import ShowToast from "../toast/toast";
@@ -17,15 +17,17 @@ export default function ErrorPopup() {
     const checkpoint = useSelector((state: RootState) => state.error.checkpoint);
     const successMessage = useSelector((state: RootState) => state.error.successMessage);
     const showSuccess = useSelector((state: RootState) => state.error.showSuccess);
+    const successCheckpoint = useSelector((state: RootState) => state.error.successCheckpoint);
 
     const handleClose = () => {
         dispatch(clearError());
+        dispatch(clearSuccess());
     };
 
     // const timeoutId = useRef<NodeJS.Timeout | null>(null);
 
     useLayoutEffect(() => {
-        if (isShow) {
+        if (isShow && message) {
             // if (timeoutId.current) {
             //     clearTimeout(timeoutId.current);
             // }
@@ -45,10 +47,10 @@ export default function ErrorPopup() {
     }, [isShow, handleClose, checkpoint]);
 
     useLayoutEffect(() => {
-        if (showSuccess) {
+        if (showSuccess && successMessage) {
             ShowToast({ message: successMessage, success: true });
         }
-    }, [showSuccess, successMessage]);
+    }, [showSuccess, successMessage, successCheckpoint]);
 
     // return (
     //     <div
