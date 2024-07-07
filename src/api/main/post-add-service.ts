@@ -3,6 +3,7 @@
 import { Dispatch, AnyAction } from "@reduxjs/toolkit";
 import fetchAPI from "../api-utils";
 import { setAddService } from "@/redux/slice/wedding-slice";
+import { generateRandomId } from "@/functions/random";
 
 export default async function PostAddService(
     dispatch: Dispatch<AnyAction>,
@@ -23,7 +24,7 @@ export default async function PostAddService(
             const response = await fetchAPI("/service/new", {
                 method: "POST",
                 body: {
-                    service_id,
+                    service_id: service_id || generateRandomId(),
                     service_name,
                     service_price,
                     service_note,
@@ -34,7 +35,7 @@ export default async function PostAddService(
             }
             dispatch(
                 setAddService({
-                    service_id,
+                    service_id: service_id || generateRandomId(),
                     service_name,
                     service_price,
                     note: service_note,

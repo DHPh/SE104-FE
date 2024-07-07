@@ -3,6 +3,7 @@
 import { Dispatch, AnyAction } from "@reduxjs/toolkit";
 import fetchAPI from "../api-utils";
 import { setAddRoom } from "@/redux/slice/wedding-slice";
+import { generateRandomId } from "@/functions/random";
 
 export default async function PostAddRoom(
     dispatch: Dispatch<AnyAction>,
@@ -27,7 +28,7 @@ export default async function PostAddRoom(
             const response = await fetchAPI("/room/new", {
                 method: "POST",
                 body: {
-                    room_id,
+                    room_id: room_id || generateRandomId(),
                     room_name,
                     room_type,
                     max_table,
@@ -40,7 +41,7 @@ export default async function PostAddRoom(
             }
             dispatch(
                 setAddRoom({
-                    room_id,
+                    room_id: room_id || generateRandomId(),
                     room_name,
                     room_type,
                     max_table,
