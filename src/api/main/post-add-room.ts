@@ -4,6 +4,7 @@ import { Dispatch, AnyAction } from "@reduxjs/toolkit";
 import fetchAPI from "../api-utils";
 import { setAddRoom } from "@/redux/slice/wedding-slice";
 import { generateRandomId } from "@/functions/random";
+import { setError, setSuccess } from "@/redux/slice/error-slice";
 
 export default async function PostAddRoom(
     dispatch: Dispatch<AnyAction>,
@@ -37,8 +38,12 @@ export default async function PostAddRoom(
                 },
             });
             if (!response.ok) {
+                const data = await response.json();
+                dispatch(setError(data.message_vi));
                 reject(response.statusText);
+                return;
             }
+            dispatch(setSuccess("Thêm sảnh thành công"));
             dispatch(
                 setAddRoom({
                     room_id: room_id || generateRandomId(),
@@ -53,6 +58,7 @@ export default async function PostAddRoom(
             );
             resolve();
         } catch (error) {
+            dispatch(setError(error as string));
             reject(error);
         }
     });

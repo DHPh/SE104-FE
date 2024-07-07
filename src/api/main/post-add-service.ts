@@ -4,6 +4,7 @@ import { Dispatch, AnyAction } from "@reduxjs/toolkit";
 import fetchAPI from "../api-utils";
 import { setAddService } from "@/redux/slice/wedding-slice";
 import { generateRandomId } from "@/functions/random";
+import { setError, setSuccess } from "@/redux/slice/error-slice";
 
 export default async function PostAddService(
     dispatch: Dispatch<AnyAction>,
@@ -31,8 +32,12 @@ export default async function PostAddService(
                 },
             });
             if (!response.ok) {
+                const data = await response.json();
+                dispatch(setError(data.message_vi));
                 reject(response.statusText);
+                return;
             }
+            dispatch(setSuccess("Thêm dịch vụ thành công"));
             dispatch(
                 setAddService({
                     service_id: service_id || generateRandomId(),
@@ -45,6 +50,7 @@ export default async function PostAddService(
             );
             resolve();
         } catch (error) {
+            dispatch(setError(error as string));
             reject(error);
         }
     });

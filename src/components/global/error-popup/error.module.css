@@ -1,0 +1,29 @@
+.ErrorPopUp {
+    position: fixed;
+    font-size: 1rem;
+    z-index: 10000;
+    background-color: #ffecec;
+    border-radius: 0.625em;
+    box-shadow: 0px 2px 15px 0px rgba(0, 0, 0, 0.25);
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: max-content;
+    max-width: 80%;
+    top: 10%;
+}
+
+.Message {
+    white-space: normal;
+    vertical-align: top;
+    display: inline-block;
+    width: fit-content;
+    line-break: anywhere;
+    text-align: center;
+}
+
+@media screen and (max-width: 896px) {
+    .ErrorPopUp {
+        font-size: 2vw;
+        top: 7%;
+    }
+}

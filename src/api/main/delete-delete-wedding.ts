@@ -3,6 +3,7 @@
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import fetchAPI from "../api-utils";
 import { setDeleteWedding } from "@/redux/slice/wedding-slice";
+import { setError, setSuccess } from "@/redux/slice/error-slice";
 
 export default async function DeleteDeleteWedding(
     dispatch: Dispatch<AnyAction>,
@@ -15,12 +16,15 @@ export default async function DeleteDeleteWedding(
             });
             const data = await res.json();
             if (res.status === 200) {
+                dispatch(setSuccess("Xóa tiệc cưới thành công"));
                 resolve(data.data);
                 dispatch(setDeleteWedding(wedding_id));
             } else {
+                dispatch(setError(data.message_vi));
                 reject(data.message_vi);
             }
         } catch (error) {
+            dispatch(setError(error as string));
             reject(error);
         }
     });

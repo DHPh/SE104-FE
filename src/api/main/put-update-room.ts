@@ -3,6 +3,7 @@
 import { Dispatch, AnyAction } from "@reduxjs/toolkit";
 import fetchAPI from "../api-utils";
 import { setUpdateRoom } from "@/redux/slice/wedding-slice";
+import { setError, setSuccess } from "@/redux/slice/error-slice";
 
 export default async function PutUpdateRoom(
     dispatch: Dispatch<AnyAction>,
@@ -37,12 +38,16 @@ export default async function PutUpdateRoom(
             });
             if (response.status === 200) {
                 const data = await response.json();
+                dispatch(setSuccess("Cập nhật sảnh thành công"));
                 dispatch(setUpdateRoom(data));
                 resolve(data);
             } else {
+                const data = await response.json();
+                dispatch(setError(data.message_vi));
                 reject(response.statusText);
             }
         } catch (error) {
+            dispatch(setError(error as string));
             reject(error);
         }
     });

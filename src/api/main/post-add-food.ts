@@ -4,6 +4,7 @@ import { Dispatch, AnyAction } from "@reduxjs/toolkit";
 import fetchAPI from "../api-utils";
 import { setAddFood } from "@/redux/slice/wedding-slice";
 import { generateRandomId } from "@/functions/random";
+import { setError, setSuccess } from "@/redux/slice/error-slice";
 
 // "food_id": "string",
 // "food_name": "string",
@@ -48,11 +49,15 @@ export default async function PostAddFood(
                         updated_at: "",
                     }),
                 );
+                dispatch(setSuccess("Thêm món ăn thành công"));
                 resolve(data);
             } else {
-                throw new Error(response.statusText);
+                const data = await response.json();
+                dispatch(setError(data.message_vi));
+                reject(response);
             }
         } catch (error) {
+            dispatch(setError(error as string));
             reject(error);
         }
     });

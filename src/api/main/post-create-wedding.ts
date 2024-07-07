@@ -5,6 +5,7 @@ import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import fetchAPI from "../api-utils";
 import { setNewWedding, NewWedding } from "@/redux/slice/wedding-slice";
 import { formatDateFromISOString } from "@/functions/convert-data";
+import { setError, setSuccess } from "@/redux/slice/error-slice";
 
 export default async function PostCreateWedding({
     dispatch,
@@ -24,13 +25,16 @@ export default async function PostCreateWedding({
             const data = await res.json();
             if (res.status === 200) {
                 resolve(data.data);
+                dispatch(setSuccess("Tạo tiệc cưới thành công"));
                 const newWedding = { ...wedding_info, wedding_id: data.data };
                 console.log(newWedding);
                 dispatch(setNewWedding(newWedding));
             } else {
+                dispatch(setError(data.message_vi));
                 reject(data.message_vi);
             }
         } catch (error) {
+            dispatch(setError(error as string));
             reject(error);
         }
     });

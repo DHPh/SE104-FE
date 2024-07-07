@@ -3,6 +3,7 @@
 import { Dispatch, AnyAction } from "@reduxjs/toolkit";
 import fetchAPI from "../api-utils";
 import { setUpdateFood } from "@/redux/slice/wedding-slice";
+import { setError, setSuccess } from "@/redux/slice/error-slice";
 
 export default async function PutUpdateFood(
     dispatch: Dispatch<AnyAction>,
@@ -32,6 +33,7 @@ export default async function PutUpdateFood(
 
             if (response.ok) {
                 const data = await response.json();
+                dispatch(setSuccess("Cập nhật món ăn thành công"));
                 dispatch(
                     setUpdateFood({
                         food_id,
@@ -44,9 +46,12 @@ export default async function PutUpdateFood(
                 );
                 resolve(data);
             } else {
-                throw new Error(response.statusText);
+                const data = await response.json();
+                dispatch(setError(data.message_vi));
+                reject(data.message_vi);
             }
         } catch (error) {
+            dispatch(setError(error as string));
             reject(error);
         }
     });

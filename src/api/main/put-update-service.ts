@@ -3,6 +3,7 @@
 import { Dispatch, AnyAction } from "@reduxjs/toolkit";
 import fetchAPI from "../api-utils";
 import { setUpdateService } from "@/redux/slice/wedding-slice";
+import { setError, setSuccess } from "@/redux/slice/error-slice";
 
 // "service_id": "string",
 // "service_name": "string",
@@ -36,6 +37,7 @@ export default async function PutUpdateService(
             });
             if (response.status === 200) {
                 const data = await response.json();
+                dispatch(setSuccess("Cập nhật dịch vụ thành công"));
                 dispatch(
                     setUpdateService({
                         service_id,
@@ -48,9 +50,12 @@ export default async function PutUpdateService(
                 );
                 resolve(data);
             } else {
+                const data = await response.json();
+                dispatch(setError(data.message_vi));
                 reject(response.statusText);
             }
         } catch (error) {
+            dispatch(setError(error as string));
             reject(error);
         }
     });

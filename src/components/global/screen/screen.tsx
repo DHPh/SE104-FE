@@ -20,6 +20,7 @@ import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import DiningIcon from "@mui/icons-material/Dining";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
+import ErrorPopup from "../error-popup/error-popup";
 
 interface ScreenProps {
     children: React.ReactNode;
@@ -124,6 +125,7 @@ export default function Screen({ children }: ScreenProps) {
 
     return (
         <div className="flex h-screen ">
+            <ErrorPopup />
             <div>
                 <div
                     style={{

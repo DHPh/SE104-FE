@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { Button, TextField } from "@mui/material";
 import { ScreenContent } from "@/components/global/screen/screen";
 import fetchAPI from "@/api/api-utils";
+import { setError } from "@/redux/slice/error-slice";
 
 export default function Page() {
+    const dispatch = useDispatch();
     const [password, setPassword] = useState<{
         old_password: string;
         new_password: string;
@@ -18,7 +21,7 @@ export default function Page() {
 
     const handleChangePassword = async () => {
         if (password.new_password !== password.confirm_password) {
-            alert("Mật khẩu mới không trùng khớp");
+            dispatch(setError("Mật khẩu mới không khớp"));
             return;
         }
 
@@ -34,9 +37,11 @@ export default function Page() {
                 alert("Đổi mật khẩu thành công");
                 window.location.reload();
             } else {
-                alert("Đổi mật khẩu thất bại");
+                const data = await res.json();
+                dispatch(setError(data.message_vi));
             }
         } catch (error) {
+            dispatch(setError(error as string));
             console.error(error);
         }
     };
