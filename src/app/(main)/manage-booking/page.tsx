@@ -376,6 +376,7 @@ export default function Page() {
             return;
         }
         if (isNewWedding) {
+            console.log("New wedding");
             setNewWedding((prevState) => {
                 if (prevState) {
                     if (type === "delete") {
@@ -1572,14 +1573,18 @@ export default function Page() {
                                             if (!currentNewFood) {
                                                 return;
                                             }
-                                            handleUpdateFoodOrder("add", {
-                                                foodId: currentNewFood,
-                                                note: "",
-                                                price:
-                                                    foodList.find(
-                                                        (f) => f.food_id === currentNewFood,
-                                                    )?.food_price || 0,
-                                            });
+                                            handleUpdateFoodOrder(
+                                                "add",
+                                                {
+                                                    foodId: currentNewFood,
+                                                    note: "",
+                                                    price:
+                                                        foodList.find(
+                                                            (f) => f.food_id === currentNewFood,
+                                                        )?.food_price || 0,
+                                                },
+                                                true,
+                                            );
                                         }}
                                     >
                                         THÊM MÓN ĂN
@@ -1707,15 +1712,20 @@ export default function Page() {
                                             if (!currentNewService) {
                                                 return;
                                             }
-                                            handleUpdateServiceOrder("add", {
-                                                serviceId: currentNewService,
-                                                note: "",
-                                                num: 1,
-                                                price:
-                                                    serviceList.find(
-                                                        (s) => s.service_id === currentNewService,
-                                                    )?.service_price || 0,
-                                            });
+                                            handleUpdateServiceOrder(
+                                                "add",
+                                                {
+                                                    serviceId: currentNewService,
+                                                    note: "",
+                                                    num: 1,
+                                                    price:
+                                                        serviceList.find(
+                                                            (s) =>
+                                                                s.service_id === currentNewService,
+                                                        )?.service_price || 0,
+                                                },
+                                                true,
+                                            );
                                         }}
                                     >
                                         THÊM DỊCH VỤ
