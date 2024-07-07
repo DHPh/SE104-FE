@@ -562,6 +562,11 @@ export default function Page() {
                 });
                 if (res) {
                     setUpdateStatus("success");
+                    setUpdatedWedding({
+                        ...updatedWedding,
+                        food_orders: [],
+                        service_orders: [],
+                    });
                     setTimeout(() => {
                         setUpdateStatus("idle");
                     }, 3000);
@@ -591,6 +596,11 @@ export default function Page() {
                 });
                 if (res) {
                     setCreatingStatus("success");
+                    setNewWedding({
+                        ...newWedding,
+                        food_orders: [],
+                        service_orders: [],
+                    });
                     setTimeout(() => {
                         setCreatingStatus("idle");
                     }, 3000);
@@ -997,7 +1007,7 @@ export default function Page() {
                                         <TextField
                                             label="Phí chậm trễ (%)"
                                             type="number"
-                                            defaultValue={lateFee}
+                                            defaultValue={1}
                                             onChange={(e) => {
                                                 if (Number(e.target.value) < 0) {
                                                     e.target.value = "0";
