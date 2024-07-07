@@ -45,6 +45,7 @@ import SetLoadingCursor from "@/functions/loading-cursor";
 
 export default function Page() {
     const dispatch = useDispatch();
+    const currentUserRole = useSelector((state: RootState) => state.auth.user?.role);
     const [currentWedding, setCurrentWedding] = useState<
         | {
               fullData: Wedding;
@@ -133,7 +134,7 @@ export default function Page() {
         "idle",
     );
 
-    const [lateFee, setLateFee] = useState<number>(0);
+    const [lateFee, setLateFee] = useState<number>(1);
 
     useEffect(() => {
         if (fullShiftList.length === 0 || roomList.length === 0) {
@@ -959,84 +960,91 @@ export default function Page() {
                                     }}
                                 />
                             </div>
-                            <br />
-                            <span className="font-bold">TRẠNG THÁI THANH TOÁN</span>
-                            <div className="grid grid-cols-3 gap-4 pt-4">
-                                <TextField
-                                    label="Tình trạng thanh toán (%)"
-                                    type="number"
-                                    defaultValue={currentWeddingInvoice?.payment_status}
-                                    // eslint-disable-next-line react/jsx-no-bind
-                                    onChange={function (e) {
-                                        // Check if value is between 0 and 100
-                                        if (Number(e.target.value) < 0) {
-                                            e.target.value = "0";
-                                            handleInvoiceChange("payment_status", 0);
-                                            return;
-                                        }
-                                        if (Number(e.target.value) > 100) {
-                                            e.target.value = "100";
-                                            handleInvoiceChange("payment_status", 100);
-                                            return;
-                                        }
-                                        handleInvoiceChange(
-                                            "payment_status",
-                                            Number(e.target.value),
-                                        );
-                                    }}
-                                    InputProps={{
-                                        inputProps: {
-                                            min: 0,
-                                            max: 100,
-                                        },
-                                    }}
-                                />
-                                <TextField
-                                    label="Phí chậm trễ (%)"
-                                    type="number"
-                                    defaultValue={lateFee}
-                                    onChange={(e) => {
-                                        if (Number(e.target.value) < 0) {
-                                            e.target.value = "0";
-                                            setLateFee(0);
-                                            return;
-                                        }
-                                        if (Number(e.target.value) > 100) {
-                                            e.target.value = "100";
-                                            setLateFee(100);
-                                            return;
-                                        }
-                                        setLateFee(Number(e.target.value));
-                                    }}
-                                />
-                                <Button
-                                    variant="contained"
-                                    color="warning"
-                                    onClick={() => {
-                                        if (updatedWeddingInvoice) {
-                                            const date = new Date();
-                                            const day = date.getDate().toString().padStart(2, "0");
-                                            const month = (date.getMonth() + 1)
-                                                .toString()
-                                                .padStart(2, "0"); // getMonth() is zero-based
-                                            const year = date.getFullYear().toString();
+                            {currentUserRole !== "user" && (
+                                <>
+                                    <br />
+                                    <span className="font-bold">TRẠNG THÁI THANH TOÁN</span>
+                                    <div className="grid grid-cols-3 gap-4 pt-4">
+                                        <TextField
+                                            label="Tình trạng thanh toán (%)"
+                                            type="number"
+                                            defaultValue={currentWeddingInvoice?.payment_status}
+                                            // eslint-disable-next-line react/jsx-no-bind
+                                            onChange={function (e) {
+                                                // Check if value is between 0 and 100
+                                                if (Number(e.target.value) < 0) {
+                                                    e.target.value = "0";
+                                                    handleInvoiceChange("payment_status", 0);
+                                                    return;
+                                                }
+                                                if (Number(e.target.value) > 100) {
+                                                    e.target.value = "100";
+                                                    handleInvoiceChange("payment_status", 100);
+                                                    return;
+                                                }
+                                                handleInvoiceChange(
+                                                    "payment_status",
+                                                    Number(e.target.value),
+                                                );
+                                            }}
+                                            InputProps={{
+                                                inputProps: {
+                                                    min: 0,
+                                                    max: 100,
+                                                },
+                                            }}
+                                        />
+                                        <TextField
+                                            label="Phí chậm trễ (%)"
+                                            type="number"
+                                            defaultValue={lateFee}
+                                            onChange={(e) => {
+                                                if (Number(e.target.value) < 0) {
+                                                    e.target.value = "0";
+                                                    setLateFee(0);
+                                                    return;
+                                                }
+                                                if (Number(e.target.value) > 100) {
+                                                    e.target.value = "100";
+                                                    setLateFee(100);
+                                                    return;
+                                                }
+                                                setLateFee(Number(e.target.value));
+                                            }}
+                                        />
+                                        <Button
+                                            variant="contained"
+                                            color="warning"
+                                            onClick={() => {
+                                                if (updatedWeddingInvoice) {
+                                                    const date = new Date();
+                                                    const day = date
+                                                        .getDate()
+                                                        .toString()
+                                                        .padStart(2, "0");
+                                                    const month = (date.getMonth() + 1)
+                                                        .toString()
+                                                        .padStart(2, "0"); // getMonth() is zero-based
+                                                    const year = date.getFullYear().toString();
 
-                                            const formattedDate = `${day}/${month}/${year}`;
+                                                    const formattedDate = `${day}/${month}/${year}`;
 
-                                            PutPaymentInvoice(
-                                                currentWedding.fullData.wedding_id,
-                                                updatedWeddingInvoice.payment_status,
-                                                formattedDate,
-                                                lateFee,
-                                            );
-                                        } else {
-                                            console.error("Invalid updatedWeddingInvoice");
-                                        }
-                                    }}
-                                >
-                                    XÁC NHẬN THANH TOÁN
-                                </Button>
-                            </div>
+                                                    PutPaymentInvoice(
+                                                        currentWedding.fullData.wedding_id,
+                                                        updatedWeddingInvoice.payment_status,
+                                                        formattedDate,
+                                                        lateFee,
+                                                    );
+                                                } else {
+                                                    console.error("Invalid updatedWeddingInvoice");
+                                                }
+                                            }}
+                                        >
+                                            XÁC NHẬN THANH TOÁN
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
                             <br />
                             <Divider />
                             <br />
