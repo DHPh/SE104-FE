@@ -1494,11 +1494,15 @@ export default function Page() {
                                                     color="warning"
                                                     className="flex-shrink-0"
                                                     onClick={() => {
-                                                        handleUpdateFoodOrder("delete", {
-                                                            foodId: foodOrder.fo_id,
-                                                            note: foodOrder.fo_note,
-                                                            price: foodOrder.fo_price,
-                                                        });
+                                                        handleUpdateFoodOrder(
+                                                            "delete",
+                                                            {
+                                                                foodId: foodOrder.fo_id,
+                                                                note: foodOrder.fo_note,
+                                                                price: foodOrder.fo_price,
+                                                            },
+                                                            true,
+                                                        );
                                                     }}
                                                 >
                                                     Xoá
@@ -1512,29 +1516,33 @@ export default function Page() {
                                                 variant="outlined"
                                                 margin="normal"
                                                 onChange={(e) => {
-                                                    handleChangeFoodDetail(foodOrder.fo_id, {
-                                                        note: e.target.value,
-                                                        price: foodOrder.fo_price,
-                                                    });
+                                                    handleChangeFoodDetail(
+                                                        foodOrder.fo_id,
+                                                        {
+                                                            note: e.target.value,
+                                                            price: foodOrder.fo_price,
+                                                        },
+                                                        true,
+                                                    );
                                                 }}
                                             />
                                             <TextField
                                                 label="Giá món ăn"
-                                                value={formatPrice(
-                                                    updatedWedding?.food_orders.find(
-                                                        (f) => f.fo_id === foodOrder.fo_id,
-                                                    )?.fo_price || 0,
-                                                )}
+                                                value={formatPrice(foodOrder.fo_price)}
                                                 margin="normal"
                                                 onChange={(e) => {
                                                     const extractedPrice = handleVNDInput(
                                                         e.target.value,
                                                     );
 
-                                                    handleChangeFoodDetail(foodOrder.fo_id, {
-                                                        note: foodOrder.fo_note,
-                                                        price: extractedPrice,
-                                                    });
+                                                    handleChangeFoodDetail(
+                                                        foodOrder.fo_id,
+                                                        {
+                                                            note: foodOrder.fo_note,
+                                                            price: extractedPrice,
+                                                        },
+                                                        true,
+                                                    );
                                                 }}
                                             />
                                         </div>
@@ -1615,12 +1623,16 @@ export default function Page() {
                                                     color="warning"
                                                     className="flex-shrink-0"
                                                     onClick={() => {
-                                                        handleUpdateServiceOrder("delete", {
-                                                            serviceId: serviceOrder.service_id,
-                                                            note: serviceOrder.note,
-                                                            num: serviceOrder.num,
-                                                            price: serviceOrder.service_price,
-                                                        });
+                                                        handleUpdateServiceOrder(
+                                                            "delete",
+                                                            {
+                                                                serviceId: serviceOrder.service_id,
+                                                                note: serviceOrder.note,
+                                                                num: serviceOrder.num,
+                                                                price: serviceOrder.service_price,
+                                                            },
+                                                            true,
+                                                        );
                                                     }}
                                                 >
                                                     Xoá
@@ -1638,6 +1650,7 @@ export default function Page() {
                                                             num: Number(e.target.value),
                                                             price: serviceOrder.service_price,
                                                         },
+                                                        true,
                                                     );
                                                 }}
                                             />
@@ -1656,6 +1669,7 @@ export default function Page() {
                                                             num: serviceOrder.num,
                                                             price: serviceOrder.service_price,
                                                         },
+                                                        true,
                                                     );
                                                 }}
                                             />
@@ -1673,6 +1687,7 @@ export default function Page() {
                                                             num: serviceOrder.num,
                                                             price: Number(e.target.value),
                                                         },
+                                                        true,
                                                     );
                                                 }}
                                             />
