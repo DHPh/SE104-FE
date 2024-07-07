@@ -26,11 +26,12 @@ export default async function PostAddFood(
     },
 ) {
     return new Promise(async (resolve, reject) => {
+        const randomId = generateRandomId();
         try {
             const response = await fetchAPI("/food/new", {
                 method: "POST",
                 body: {
-                    food_id: food_id || generateRandomId(),
+                    food_id: food_id || randomId,
                     food_name,
                     food_price,
                     food_note,
@@ -41,7 +42,7 @@ export default async function PostAddFood(
                 const data = await response.json();
                 dispatch(
                     setAddFood({
-                        food_id: food_id || generateRandomId(),
+                        food_id: food_id || randomId,
                         food_name,
                         food_price,
                         note: food_note,

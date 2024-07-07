@@ -25,11 +25,12 @@ export default async function PostAddRoom(
     },
 ): Promise<void> {
     return new Promise(async (resolve, reject) => {
+        const randomId = generateRandomId();
         try {
             const response = await fetchAPI("/room/new", {
                 method: "POST",
                 body: {
-                    room_id: room_id || generateRandomId(),
+                    room_id: room_id || randomId,
                     room_name,
                     room_type,
                     max_table,
@@ -46,7 +47,7 @@ export default async function PostAddRoom(
             dispatch(setSuccess("Thêm sảnh thành công"));
             dispatch(
                 setAddRoom({
-                    room_id: room_id || generateRandomId(),
+                    room_id: room_id || randomId,
                     room_name,
                     room_type,
                     max_table,

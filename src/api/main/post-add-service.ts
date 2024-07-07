@@ -21,11 +21,12 @@ export default async function PostAddService(
     },
 ): Promise<void> {
     return new Promise(async (resolve, reject) => {
+        const randomId = generateRandomId();
         try {
             const response = await fetchAPI("/service/new", {
                 method: "POST",
                 body: {
-                    service_id: service_id || generateRandomId(),
+                    service_id: service_id || randomId,
                     service_name,
                     service_price,
                     service_note,
@@ -40,7 +41,7 @@ export default async function PostAddService(
             dispatch(setSuccess("Thêm dịch vụ thành công"));
             dispatch(
                 setAddService({
-                    service_id: service_id || generateRandomId(),
+                    service_id: service_id || randomId,
                     service_name,
                     service_price,
                     note: service_note,
