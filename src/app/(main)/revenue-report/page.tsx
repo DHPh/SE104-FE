@@ -52,7 +52,7 @@ export default function Page() {
     };
 
     return (
-        <ScreenContent>
+        <ScreenContent useButton={false}>
             <div className="flex flex-row w-full flex-shrink-0 items-center gap-4">
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DemoContainer components={["DateRangePicker"]}>

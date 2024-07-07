@@ -14,6 +14,7 @@ import PutUpdateFood from "@/api/main/put-update-food";
 import PostUploadFoodImage from "@/api/main/post-upload-food-image";
 import GetFoodImage from "@/api/main/get-food-image";
 import { formatPrice } from "@/functions/convert-data";
+import DeleteDeleteFood from "@/api/main/delete-delete-food";
 
 function ZoomableImage({ src, alt }: { src: string; alt: string }) {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -135,7 +136,20 @@ export default function Page() {
                             // overflowY: "auto",
                         }}
                     >
-                        <span className="text-xl font-bold pb-2">CẬP NHẬT MÓN ĂN</span>
+                        <div className="flex w-full justify-between pb-2">
+                            <span className="text-xl font-bold">CẬP NHẬT MÓN ĂN</span>
+                            <Button
+                                variant="contained"
+                                color="warning"
+                                onClick={() => {
+                                    DeleteDeleteFood(dispatch, currentFood.food_id).then(() => {
+                                        setCurrentFood(null);
+                                    });
+                                }}
+                            >
+                                XOÁ MÓN ĂN
+                            </Button>
+                        </div>
                         <div className="w-full">
                             <div className="w-full grid grid-cols-2 gap-4">
                                 <TextField

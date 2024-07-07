@@ -475,6 +475,12 @@ const weddingSlice = createSlice({
                 food.updated_at = new Date().toISOString();
             }
         },
+        setDeleteFood: (state, action: PayloadAction<string>) => {
+            const index = state.foodList.findIndex((f) => f.food_id === action.payload);
+            if (index > -1) {
+                state.foodList.splice(index, 1);
+            }
+        },
         setAddService: (state, action: PayloadAction<ServiceList>) => {
             state.serviceList.push(action.payload);
         },
@@ -487,6 +493,12 @@ const weddingSlice = createSlice({
                 service.service_price = action.payload.service_price;
                 service.note = action.payload.note;
                 service.updated_at = new Date().toISOString();
+            }
+        },
+        setDeleteService: (state, action: PayloadAction<string>) => {
+            const index = state.serviceList.findIndex((s) => s.service_id === action.payload);
+            if (index > -1) {
+                state.serviceList.splice(index, 1);
             }
         },
         setUserList: (state, action: PayloadAction<User[]>) => {
@@ -544,8 +556,10 @@ export const {
     setDeleteRoom,
     setAddFood,
     setUpdateFood,
+    setDeleteFood,
     setAddService,
     setUpdateService,
+    setDeleteService,
     setUserList,
     setAddUser,
     setUpdateUser,

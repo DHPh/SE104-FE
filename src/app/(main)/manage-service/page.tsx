@@ -14,6 +14,7 @@ import PutUpdateService from "@/api/main/put-update-service";
 import PostUploadServiceImage from "@/api/main/post-upload-service-image";
 import GetServiceImage from "@/api/main/get-service-image";
 import { formatPrice } from "@/functions/convert-data";
+import DeleteDeleteService from "@/api/main/delete-delete-service";
 
 function ZoomableImage({ src, alt }: { src: string; alt: string }) {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -135,7 +136,22 @@ export default function Page() {
                             // overflowY: "auto",
                         }}
                     >
-                        <span className="text-xl font-bold pb-2">CẬP NHẬT DỊCH VỤ</span>
+                        <div className="flex w-full justify-between pb-2">
+                            <span className="text-xl font-bold">CẬP NHẬT DỊCH VỤ</span>
+                            <Button
+                                variant="contained"
+                                color="warning"
+                                onClick={() => {
+                                    DeleteDeleteService(dispatch, currentService.service_id).then(
+                                        () => {
+                                            setCurrentService(null);
+                                        },
+                                    );
+                                }}
+                            >
+                                XOÁ DỊCH VỤ
+                            </Button>
+                        </div>
                         <div className="w-full">
                             <div className="w-full grid grid-cols-2 gap-4">
                                 <TextField

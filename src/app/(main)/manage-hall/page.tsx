@@ -13,6 +13,7 @@ import GetRoomImage from "@/api/main/get-room-image";
 import PutUpdateRoom from "@/api/main/put-update-room";
 import PostUploadRoomImage from "@/api/main/post-upload-room-image";
 import PostAddRoom from "@/api/main/post-add-room";
+import DeleteDeleteRoom from "@/api/main/delete-delete-room";
 
 function ZoomableImage({ src, alt }: { src: string; alt: string }) {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -168,7 +169,20 @@ export default function Page() {
                             // overflowY: "auto",
                         }}
                     >
-                        <span className="text-xl font-bold pb-2">CẬP NHẬT SẢNH</span>
+                        <div className="flex w-full justify-between pb-2">
+                            <span className="text-xl font-bold">CẬP NHẬT SẢNH</span>
+                            <Button
+                                variant="contained"
+                                color="warning"
+                                onClick={() => {
+                                    DeleteDeleteRoom(dispatch, currentRoom.room_id).then(() => {
+                                        setCurrentRoom(null);
+                                    });
+                                }}
+                            >
+                                XOÁ SẢNH
+                            </Button>
+                        </div>
                         <div className="w-full">
                             <div className="w-full grid grid-cols-2 gap-4">
                                 <TextField

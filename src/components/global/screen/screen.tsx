@@ -161,20 +161,29 @@ interface ScreenContentProps {
     buttonAction?: () => void;
     buttonText?: string;
     color?: "inherit" | "primary" | "secondary" | "success" | "error" | "info" | "warning";
+    useButton?: boolean;
 }
 
-export function ScreenContent({ children, buttonAction, buttonText, color }: ScreenContentProps) {
+export function ScreenContent({
+    children,
+    buttonAction,
+    buttonText,
+    color,
+    useButton = true,
+}: ScreenContentProps) {
     return (
         <>
-            <Button
-                style={{ position: "absolute", right: 48, top: 25 }}
-                size="large"
-                variant="contained"
-                color={color || "primary"}
-                onClick={buttonAction}
-            >
-                {buttonText || "Button"}
-            </Button>
+            {useButton && (
+                <Button
+                    style={{ position: "absolute", right: 48, top: 25 }}
+                    size="large"
+                    variant="contained"
+                    color={color || "primary"}
+                    onClick={buttonAction}
+                >
+                    {buttonText || "Button"}
+                </Button>
+            )}
             {children}
         </>
     );
