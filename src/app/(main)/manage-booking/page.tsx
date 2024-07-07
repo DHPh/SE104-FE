@@ -34,6 +34,7 @@ import {
     UpdatedWedding,
     setWeddingDetail,
     NewWedding,
+    setUpdatePaymentStatus,
 } from "@/redux/slice/wedding-slice";
 import {
     getFoodName,
@@ -1122,6 +1123,11 @@ export default function Page() {
                                                         .then(() => {
                                                             dispatch(
                                                                 setSuccess("Thanh toán thành công"),
+                                                            );
+                                                            dispatch(
+                                                                setUpdatePaymentStatus(
+                                                                    updatedWeddingInvoice.payment_status,
+                                                                ),
                                                             );
                                                         })
                                                         .catch((error) => {

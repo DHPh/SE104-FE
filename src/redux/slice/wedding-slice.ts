@@ -531,6 +531,11 @@ const weddingSlice = createSlice({
                 state.userList.splice(index, 1);
             }
         },
+        setUpdatePaymentStatus: (state, action: PayloadAction<number>) => {
+            if (state.weddingDetail) {
+                state.weddingDetail.invoice.payment_status = action.payload;
+            }
+        },
     },
 });
 
@@ -564,5 +569,6 @@ export const {
     setAddUser,
     setUpdateUser,
     setDeleteUser,
+    setUpdatePaymentStatus,
 } = weddingSlice.actions;
 export default weddingSlice.reducer;
