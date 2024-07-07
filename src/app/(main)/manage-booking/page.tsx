@@ -13,6 +13,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DesktopDateTimePicker } from "@mui/x-date-pickers/DesktopDateTimePicker";
 import dayjs from "dayjs";
+import CloseIcon from "@mui/icons-material/Close";
 import { RootState } from "@/redux/store/store";
 import { ScreenContent } from "@/components/global/screen/screen";
 import DefaultTableHead from "@/components/global/table/table-head/table-head";
@@ -40,6 +41,7 @@ import {
     formatPrice,
     handleVNDInput,
     convertWeddingDetail,
+    convertDateToServerFormat,
 } from "@/functions/convert-data";
 import SetLoadingCursor from "@/functions/loading-cursor";
 import { setError } from "@/redux/slice/error-slice";
@@ -98,6 +100,7 @@ export default function Page() {
     const shiftList = fullShiftList.filter((shift) => shift.activate);
 
     const roomList = useSelector((state: RootState) => state.wedding.roomList);
+    const roomTypeList = useSelector((state: RootState) => state.wedding.roomTypeList);
     const foodList = useSelector((state: RootState) => state.wedding.foodList);
     const serviceList = useSelector((state: RootState) => state.wedding.serviceList);
 
@@ -136,6 +139,8 @@ export default function Page() {
     );
 
     const [lateFee, setLateFee] = useState<number>(1);
+
+    const [showPaymentForm, setShowPaymentForm] = useState<boolean>(false);
 
     useEffect(() => {
         if (fullShiftList.length === 0 || roomList.length === 0) {
@@ -814,7 +819,18 @@ export default function Page() {
                             // overflowY: "auto",
                         }}
                     >
-                        <span className="text-2xl font-[700]">THÔNG TIN TIỆC CƯỚI</span>
+                        <div className="flex w-full justify-between pb-2">
+                            <span className="text-2xl font-[700]">THÔNG TIN TIỆC CƯỚI</span>
+                            <Button
+                                variant="contained"
+                                color="info"
+                                onClick={() => {
+                                    setShowPaymentForm(true);
+                                }}
+                            >
+                                XEM HOÁ ĐƠN
+                            </Button>
+                        </div>
                         <div className="w-full h-full overflow-auto p-4">
                             <span className="font-bold">THAY ĐỔI THÔNG TIN</span>
                             <div className="grid grid-cols-2 gap-4 pt-4">
@@ -1393,6 +1409,212 @@ export default function Page() {
                             >
                                 CẬP NHẬT
                             </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showPaymentForm && currentWedding && weddingDetail && (
+                <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm">
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            background: "#FFF",
+                            boxShadow: "0px 0px 20px 0px rgba(0, 0, 0, 0.25)",
+                            width: "1400px",
+                            height: "750px",
+                            padding: "20px 40px",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: "20px",
+                            // overflowY: "auto",
+                        }}
+                    >
+                        <span className="text-2xl font-[700]">HOÁ ĐƠN THANH TOÁN</span>
+                        <div className="absolute top-0 right-0">
+                            <Button
+                                variant="text"
+                                onClick={() => {
+                                    setShowPaymentForm(false);
+                                }}
+                            >
+                                <CloseIcon />
+                            </Button>
+                        </div>
+                        <div className="w-full h-full overflow-auto p-4">
+                            <div className="grid grid-cols-3 gap-4 pt-4 text-[18px]">
+                                <span>Tên chú rể: {currentWedding.fullData.groom_name}</span>
+                                <span>Tên cô dâu: {currentWedding.fullData.bride_name}</span>
+                                <span>
+                                    Ngày thanh toán:{" "}
+                                    {convertDateToServerFormat(weddingDetail?.invoice.invoice_date)}
+                                </span>
+                                <span>Số lượng bàn: {weddingDetail.wedding_info.num_table}</span>
+                                <span>
+                                    Đơn giá bàn:{" "}
+                                    {formatPrice(
+                                        roomTypeList.find(
+                                            (roomType) =>
+                                                roomType.rt_id ===
+                                                weddingDetail.wedding_info.room_type,
+                                        )?.rt_price || 0,
+                                    )}
+                                </span>
+                                <span>
+                                    Tổng tiền bàn:{" "}
+                                    {formatPrice(
+                                        (roomTypeList.find(
+                                            (roomType) =>
+                                                roomType.rt_id ===
+                                                weddingDetail.wedding_info.room_type,
+                                        )?.rt_price || 0) * weddingDetail.wedding_info.num_table,
+                                    )}
+                                </span>
+                            </div>
+                            <br />
+                            <Divider />
+                            <br />
+                            <div>
+                                <div className="grid grid-cols-11 font-bold">
+                                    <span className="col-span-1">STT</span>
+                                    <span className="col-span-2">Tên món ăn</span>
+                                    <span className="col-span-2">Ghi chú</span>
+                                    <span className="col-span-3">Giá</span>
+                                    <span className="col-span-3">Thành tiền</span>
+                                </div>
+                                {weddingDetail.food_orders.map((foodOrder, index) => (
+                                    <div key={foodOrder.fo_id} className="grid grid-cols-11">
+                                        <span className="col-span-1">{index + 1}</span>
+                                        <span className="col-span-2">
+                                            {
+                                                foodList.find(
+                                                    (food) => food.food_id === foodOrder.fo_id,
+                                                )?.food_name
+                                            }
+                                        </span>
+                                        <span className="col-span-2">
+                                            {foodOrder.fo_note || "Không"}
+                                        </span>
+                                        <span className="col-span-3">
+                                            {formatPrice(foodOrder.fo_price)}
+                                        </span>
+                                        <span className="col-span-3">
+                                            {formatPrice(
+                                                foodOrder.fo_price *
+                                                    weddingDetail.wedding_info.num_table,
+                                            )}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                            <br />
+                            <span className="font-bold">
+                                Tổng tiền thực đơn:{" "}
+                                {formatPrice(
+                                    weddingDetail.food_orders.reduce((acc, cur) => {
+                                        return (
+                                            acc +
+                                            cur.fo_price * weddingDetail.wedding_info.num_table
+                                        );
+                                    }, 0),
+                                )}
+                            </span>
+                            <br />
+                            <br />
+                            <Divider />
+                            <br />
+                            <div>
+                                <div className="grid grid-cols-11 font-bold">
+                                    <span className="col-span-1">STT</span>
+                                    <span className="col-span-2">Tên dịch vụ</span>
+                                    <span className="col-span-2">Số lượng</span>
+                                    <span className="col-span-3">Giá</span>
+                                    <span className="col-span-3">Thành tiền</span>
+                                </div>
+                                {weddingDetail.service_orders.map((serviceOrder, index) => (
+                                    <div
+                                        key={serviceOrder.service_id}
+                                        className="grid grid-cols-11"
+                                    >
+                                        <span className="col-span-1">{index + 1}</span>
+                                        <span className="col-span-2">
+                                            {
+                                                serviceList.find(
+                                                    (service) =>
+                                                        service.service_id ===
+                                                        serviceOrder.service_id,
+                                                )?.service_name
+                                            }
+                                        </span>
+                                        <span className="col-span-2">{serviceOrder.num}</span>
+                                        <span className="col-span-3">
+                                            {formatPrice(serviceOrder.service_price)}
+                                        </span>
+                                        <span className="col-span-3">
+                                            {formatPrice(
+                                                serviceOrder.service_price * serviceOrder.num,
+                                            )}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                            <br />
+                            <span className="font-bold">
+                                Tổng tiền dịch vụ:{" "}
+                                {formatPrice(
+                                    weddingDetail.service_orders.reduce((acc, cur) => {
+                                        return acc + cur.service_price * cur.num;
+                                    }, 0),
+                                )}
+                            </span>
+                            <br />
+                            <br />
+                            <span className="font-bold">
+                                Tổng tiền hoá đơn:{" "}
+                                {formatPrice(
+                                    weddingDetail.food_orders.reduce((acc, cur) => {
+                                        return (
+                                            acc +
+                                            cur.fo_price * weddingDetail.wedding_info.num_table
+                                        );
+                                    }, 0) +
+                                        weddingDetail.service_orders.reduce((acc, cur) => {
+                                            return acc + cur.service_price * cur.num;
+                                        }, 0) +
+                                        (roomTypeList.find(
+                                            (roomType) =>
+                                                roomType.rt_id ===
+                                                weddingDetail.wedding_info.room_type,
+                                        )?.rt_price || 0) *
+                                            weddingDetail.wedding_info.num_table,
+                                )}
+                            </span>
+                            <br />
+                            <br />
+                            <span className="font-bold">
+                                Tiền đặt cọc:{" "}
+                                {weddingDetail.invoice.payment_status !== 100
+                                    ? formatPrice(
+                                          weddingDetail.invoice.total *
+                                              weddingDetail.invoice.payment_status,
+                                      )
+                                    : "Đã thanh toán"}
+                            </span>
+                            <br />
+                            <br />
+                            <span className="font-bold">
+                                Tiền còn lại:{" "}
+                                {weddingDetail.invoice.payment_status !== 100
+                                    ? formatPrice(
+                                          (weddingDetail.invoice.total *
+                                              (100 - weddingDetail.invoice.payment_status)) /
+                                              100,
+                                      )
+                                    : "Đã thanh toán"}
+                            </span>
                         </div>
                     </div>
                 </div>
