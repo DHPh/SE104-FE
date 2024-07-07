@@ -42,7 +42,6 @@ import {
     convertWeddingDetail,
 } from "@/functions/convert-data";
 import SetLoadingCursor from "@/functions/loading-cursor";
-import calculateLateFee from "@/functions/calculate-late-fee";
 
 export default function Page() {
     const dispatch = useDispatch();
@@ -133,6 +132,8 @@ export default function Page() {
     const [creatingStatus, setCreatingStatus] = useState<"idle" | "loading" | "success" | "error">(
         "idle",
     );
+
+    const [lateFee, setLateFee] = useState<number>(0);
 
     useEffect(() => {
         if (fullShiftList.length === 0 || roomList.length === 0) {
@@ -969,10 +970,12 @@ export default function Page() {
                                         // Check if value is between 0 and 100
                                         if (Number(e.target.value) < 0) {
                                             e.target.value = "0";
+                                            handleInvoiceChange("payment_status", 0);
                                             return;
                                         }
                                         if (Number(e.target.value) > 100) {
                                             e.target.value = "100";
+                                            handleInvoiceChange("payment_status", 100);
                                             return;
                                         }
                                         handleInvoiceChange(
@@ -988,17 +991,21 @@ export default function Page() {
                                     }}
                                 />
                                 <TextField
-                                    label="Phí chậm trễ"
-                                    defaultValue={formatPrice(
-                                        calculateLateFee(
-                                            currentWeddingInvoice?.invoice_date || "",
-                                            currentWeddingInvoice?.payment_at ||
-                                                new Date().toISOString(),
-                                            currentWeddingInvoice?.total || 0,
-                                        ),
-                                    )}
-                                    InputProps={{
-                                        readOnly: true,
+                                    label="Phí chậm trễ (%)"
+                                    type="number"
+                                    defaultValue={lateFee}
+                                    onChange={(e) => {
+                                        if (Number(e.target.value) < 0) {
+                                            e.target.value = "0";
+                                            setLateFee(0);
+                                            return;
+                                        }
+                                        if (Number(e.target.value) > 100) {
+                                            e.target.value = "100";
+                                            setLateFee(100);
+                                            return;
+                                        }
+                                        setLateFee(Number(e.target.value));
                                     }}
                                 />
                                 <Button
@@ -1019,13 +1026,7 @@ export default function Page() {
                                                 currentWedding.fullData.wedding_id,
                                                 updatedWeddingInvoice.payment_status,
                                                 formattedDate,
-                                                Number(
-                                                    calculateLateFee(
-                                                        currentWeddingInvoice?.invoice_date || "",
-                                                        new Date().toISOString(),
-                                                        currentWeddingInvoice?.total || 0,
-                                                    ),
-                                                ),
+                                                lateFee,
                                             );
                                         } else {
                                             console.error("Invalid updatedWeddingInvoice");
