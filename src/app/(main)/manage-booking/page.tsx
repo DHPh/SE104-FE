@@ -372,10 +372,15 @@ export default function Page() {
         },
         isNewWedding: boolean = false,
     ) => {
-        if (type === "add" && weddingDetail?.food_orders.find((f) => f.fo_id === foodId)) {
-            return;
-        }
         if (isNewWedding) {
+            if (
+                type === "add" &&
+                newWedding &&
+                newWedding.food_orders.find((f) => f.fo_id === foodId)
+            ) {
+                dispatch(setError("Món ăn đã tồn tại"));
+                return;
+            }
             console.log("New wedding");
             setNewWedding((prevState) => {
                 if (prevState) {
@@ -401,6 +406,15 @@ export default function Page() {
                 }
                 return prevState;
             });
+            return;
+        }
+
+        if (
+            type === "add" &&
+            updatedWedding &&
+            updatedWedding.food_orders.find((f) => f.fo_id === foodId)
+        ) {
+            dispatch(setError("Món ăn đã tồn tại"));
             return;
         }
 
@@ -466,13 +480,15 @@ export default function Page() {
         },
         isNewWedding: boolean = false,
     ) => {
-        if (
-            type === "add" &&
-            weddingDetail?.service_orders.find((s) => s.service_id === serviceId)
-        ) {
-            return;
-        }
         if (isNewWedding) {
+            if (
+                type === "add" &&
+                newWedding &&
+                newWedding.service_orders.find((s) => s.service_id === serviceId)
+            ) {
+                dispatch(setError("Dịch vụ đã tồn tại"));
+                return;
+            }
             setNewWedding((prevState) => {
                 if (prevState) {
                     if (type === "delete") {
@@ -498,6 +514,15 @@ export default function Page() {
                 }
                 return prevState;
             });
+            return;
+        }
+
+        if (
+            type === "add" &&
+            updatedWedding &&
+            updatedWedding.service_orders.find((s) => s.service_id === serviceId)
+        ) {
+            dispatch(setError("Dịch vụ đã tồn tại"));
             return;
         }
 
